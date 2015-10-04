@@ -1,23 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.Drawing.Imaging;
 using System.Windows.Forms;
 
 using AForge;
-using AForge.Imaging;
-using AForge.Math;
-using AForge.Vision;
 using AForge.Vision.GlyphRecognition;
-using DiO_CS_GliphRecognizer;
-using System.Drawing.Imaging;
 using AForge.Imaging.Filters;
-using AForge.Video.DirectShow;
 using AForge.Video;
-using AForge.Math.Geometry;
+using AForge.Video.DirectShow;
 
 namespace DiO_CS_GliphRecognizer
 {
