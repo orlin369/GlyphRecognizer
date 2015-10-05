@@ -49,7 +49,7 @@
             this.tblpnlMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 17.4581F));
             this.tblpnlMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 82.5419F));
             this.tblpnlMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tblpnlMain.Size = new System.Drawing.Size(664, 610);
+            this.tblpnlMain.Size = new System.Drawing.Size(610, 610);
             this.tblpnlMain.TabIndex = 5;
             // 
             // pbMain
@@ -58,10 +58,10 @@
             this.pbMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pbMain.Location = new System.Drawing.Point(3, 109);
             this.pbMain.Name = "pbMain";
-            this.pbMain.Size = new System.Drawing.Size(658, 498);
+            this.pbMain.Size = new System.Drawing.Size(604, 498);
+            this.pbMain.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pbMain.TabIndex = 9;
             this.pbMain.TabStop = false;
-            this.pbMain.Paint += new System.Windows.Forms.PaintEventHandler(this.pbMain_Paint);
             // 
             // lblGlyphData
             // 
@@ -71,7 +71,7 @@
             this.lblGlyphData.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.lblGlyphData.Location = new System.Drawing.Point(3, 0);
             this.lblGlyphData.Name = "lblGlyphData";
-            this.lblGlyphData.Size = new System.Drawing.Size(658, 106);
+            this.lblGlyphData.Size = new System.Drawing.Size(604, 106);
             this.lblGlyphData.TabIndex = 10;
             this.lblGlyphData.Text = "Glyph:";
             this.lblGlyphData.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -80,7 +80,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(664, 610);
+            this.ClientSize = new System.Drawing.Size(610, 610);
             this.Controls.Add(this.tblpnlMain);
             this.Name = "MainForm";
             this.Text = "Gliph Recognizer";

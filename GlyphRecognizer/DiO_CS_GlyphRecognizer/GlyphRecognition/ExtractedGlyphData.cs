@@ -249,29 +249,6 @@ namespace AForge.Vision.GlyphRecognition
         #region Public
 
         /// <summary>
-        /// Clone the object by making its exact copy.
-        /// </summary>
-        /// 
-        /// <returns>Returns clone of the object.</returns>
-        /// 
-        public object Clone()
-        {
-            ExtractedGlyphData clone = new ExtractedGlyphData(
-                new List<IntPoint>( Quadrilateral ), (byte[,]) RawData.Clone( ), Confidence, this.CoordinateSystemSize );
-
-            if ( recognizedGlyph != null )
-            {
-                clone.RecognizedGlyph = (Glyph) recognizedGlyph.Clone( );
-            }
-            if ( recognizedQuadrilateral != null )
-            {
-                clone.RecognizedQuadrilateral = new List<IntPoint>( recognizedQuadrilateral );
-            }
-
-            return clone;
-        }
-
-        /// <summary>
         /// Calculate the centroid of the contour.
         /// </summary>
         /// <returns>Centroid point.</returns>
@@ -348,55 +325,6 @@ namespace AForge.Vision.GlyphRecognition
         }
 
         /// <summary>
-        /// Render the image and components.
-        /// </summary>
-        public void DrawContour(Graphics graphics)
-        {
-            lock (drawLock)
-            {
-                // If graphics is not instanced, return.
-                if (graphics == null)
-                {
-                    return;
-                }
-
-                Pen penTraj = new Pen(Color.Red, 3);
-                
-                if (this.Quadrilateral.Count == 4)
-                {
-                    graphics.DrawPolygon(penTraj, this.ConvertToPoint(this.Quadrilateral).ToArray());
-                }
-            }
-        }
-
-        /// <summary>
-        /// Draw the centroid of the glyph.
-        /// </summary>
-        /// <param name="graphics"></param>
-        public void DrawCentroid(Graphics graphics)
-        {
-            lock (drawLock)
-            {
-                // If graphics is not instanced, return.
-                if (graphics == null)
-                {
-                    return;
-                }
-
-                Pen penTraj = new Pen(Color.Red, 3);
-
-                if (this.Quadrilateral.Count == 4)
-                {
-                    PointF c = this.Centroid();
-                    // Draw the center point.
-                    System.Drawing.Point p = System.Drawing.Point.Add(System.Drawing.Point.Ceiling(c), new Size(-4, -4));
-                    RectangleF centroidShape = new RectangleF(p, new Size(8, 8));
-                    graphics.DrawEllipse(penTraj, centroidShape);
-                }
-            }
-        }
-
-        /// <summary>
         /// Estemate the 3D position of te glyph.
         /// </summary>
         /// <param name="imageSize">Image size is more like size of the coordinate system.</param>
@@ -404,7 +332,7 @@ namespace AForge.Vision.GlyphRecognition
         /// <param name="yaw"></param>
         /// <param name="pitch"></param>
         /// <param name="roll"></param>
-        public void Estimate(Size imageSize, bool useCoplanarPosit, out float yaw, out float pitch, out float roll)
+        public void EstimateOrientation(bool useCoplanarPosit, out float yaw, out float pitch, out float roll)
         {
             AForge.Point[] tmpQuadrilateral = new AForge.Point[this.Quadrilateral.Count];
 
@@ -414,15 +342,15 @@ namespace AForge.Vision.GlyphRecognition
             }
 
             //
-            this.focalLength = imageSize.Width;
+            this.focalLength = this.CoordinateSystemSize.Width;
 
             // Scale the coordinates
             for (int index = 0; index < tmpQuadrilateral.Length; index++)
             {
-                float x = System.Math.Max(0, System.Math.Min(tmpQuadrilateral[index].X, imageSize.Width - 1));
-                float y = System.Math.Max(0, System.Math.Min(tmpQuadrilateral[index].Y, imageSize.Height - 1));
+                float x = System.Math.Max(0, System.Math.Min(tmpQuadrilateral[index].X, this.CoordinateSystemSize.Width - 1));
+                float y = System.Math.Max(0, System.Math.Min(tmpQuadrilateral[index].Y, this.CoordinateSystemSize.Height - 1));
 
-                tmpQuadrilateral[index] = new AForge.Point(x - imageSize.Width / 2, imageSize.Height / 2 - y);
+                tmpQuadrilateral[index] = new AForge.Point(x - this.CoordinateSystemSize.Width / 2, this.CoordinateSystemSize.Height / 2 - y);
             }
 
             // Calculate model's center
@@ -474,7 +402,7 @@ namespace AForge.Vision.GlyphRecognition
         /// </summary>
         /// <param name="imageSize"></param>
         /// <returns></returns>
-        public AForge.Point[] PerformProjection(Size imageSize)
+        public AForge.Point[] PerformProjection()
         {
             // Create the tranformation matrix.
             Matrix4x4 transformationMatrix =
@@ -493,8 +421,8 @@ namespace AForge.Vision.GlyphRecognition
                 Vector3 scenePoint = (transformationMatrix * this.axesModel[i].ToVector4()).ToVector3();
 
                 projectedPoints[i] = new AForge.Point(
-                    (int)(scenePoint.X / scenePoint.Z * imageSize.Width),
-                    (int)(scenePoint.Y / scenePoint.Z * imageSize.Width));
+                    (int)(scenePoint.X / scenePoint.Z * this.CoordinateSystemSize.Width),
+                    (int)(scenePoint.Y / scenePoint.Z * this.CoordinateSystemSize.Width));
             }
 
             return projectedPoints;
@@ -523,6 +451,82 @@ namespace AForge.Vision.GlyphRecognition
 
         #endregion
 
+        #region IClonable implementation
+
+        /// <summary>
+        /// Clone the object by making its exact copy.
+        /// </summary>
+        /// 
+        /// <returns>Returns clone of the object.</returns>
+        /// 
+        public object Clone()
+        {
+            ExtractedGlyphData clone = new ExtractedGlyphData(
+                new List<IntPoint>(Quadrilateral), (byte[,])RawData.Clone(), Confidence, this.CoordinateSystemSize);
+
+            if (recognizedGlyph != null)
+            {
+                clone.RecognizedGlyph = (Glyph)recognizedGlyph.Clone();
+            }
+            if (recognizedQuadrilateral != null)
+            {
+                clone.RecognizedQuadrilateral = new List<IntPoint>(recognizedQuadrilateral);
+            }
+
+            return clone;
+        }
+
+
+        #endregion
+
+        /// <summary>
+        /// Render the image and components.
+        /// </summary>
+        public void DrawContour(Graphics graphics)
+        {
+            lock (this.drawLock)
+            {
+                // If graphics is not instanced, return.
+                if (graphics == null)
+                {
+                    return;
+                }
+
+                Pen penTraj = new Pen(Color.Red, 3);
+
+                if (this.Quadrilateral.Count == 4)
+                {
+                    graphics.DrawPolygon(penTraj, this.ConvertToPoint(this.Quadrilateral).ToArray());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Draw the centroid of the glyph.
+        /// </summary>
+        /// <param name="graphics"></param>
+        public void DrawCentroid(Graphics graphics)
+        {
+            lock (this.drawLock)
+            {
+                // If graphics is not instanced, return.
+                if (graphics == null)
+                {
+                    return;
+                }
+
+                Pen penTraj = new Pen(Color.Red, 3);
+
+                if (this.Quadrilateral.Count == 4)
+                {
+                    PointF c = this.Centroid();
+                    // Draw the center point.
+                    System.Drawing.Point p = System.Drawing.Point.Add(System.Drawing.Point.Ceiling(c), new Size(-4, -4));
+                    RectangleF centroidShape = new RectangleF(p, new Size(8, 8));
+                    graphics.DrawEllipse(penTraj, centroidShape);
+                }
+            }
+        }
 
         public void DrawPoints(Graphics graphics)
         {
@@ -560,7 +564,7 @@ namespace AForge.Vision.GlyphRecognition
             int cy = this.CoordinateSystemSize.Height / 2;
             int thicknes = 3;
 
-            AForge.Point[] projectedAxes = this.PerformProjection(this.CoordinateSystemSize);
+            AForge.Point[] projectedAxes = this.PerformProjection();
 
             using (Pen pen = new Pen(Color.Blue, thicknes))
             {

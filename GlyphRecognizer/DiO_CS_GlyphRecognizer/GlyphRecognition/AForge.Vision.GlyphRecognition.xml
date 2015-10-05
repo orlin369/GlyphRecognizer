@@ -101,14 +101,6 @@
             <param name="confidence">Confidence level of <paramref name="rawData"/> recognition.</param>
             
         </member>
-        <member name="M:AForge.Vision.GlyphRecognition.ExtractedGlyphData.Clone">
-            <summary>
-            Clone the object by making its exact copy.
-            </summary>
-            
-            <returns>Returns clone of the object.</returns>
-            
-        </member>
         <member name="M:AForge.Vision.GlyphRecognition.ExtractedGlyphData.Centroid">
             <summary>
             Calculate the centroid of the contour.
@@ -127,6 +119,31 @@
             </summary>
             <returns>Contour polygon area.</returns>
         </member>
+        <member name="M:AForge.Vision.GlyphRecognition.ExtractedGlyphData.EstimateOrientation(System.Boolean,System.Single@,System.Single@,System.Single@)">
+            <summary>
+            Estemate the 3D position of te glyph.
+            </summary>
+            <param name="imageSize">Image size is more like size of the coordinate system.</param>
+            <param name="useCoplanarPosit"></param>
+            <param name="yaw"></param>
+            <param name="pitch"></param>
+            <param name="roll"></param>
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.ExtractedGlyphData.PerformProjection">
+            <summary>
+            
+            </summary>
+            <param name="imageSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.ExtractedGlyphData.Clone">
+            <summary>
+            Clone the object by making its exact copy.
+            </summary>
+            
+            <returns>Returns clone of the object.</returns>
+            
+        </member>
         <member name="M:AForge.Vision.GlyphRecognition.ExtractedGlyphData.DrawContour(System.Drawing.Graphics)">
             <summary>
             Render the image and components.
@@ -137,23 +154,6 @@
             Draw the centroid of the glyph.
             </summary>
             <param name="graphics"></param>
-        </member>
-        <member name="M:AForge.Vision.GlyphRecognition.ExtractedGlyphData.Estimate(System.Drawing.Size,System.Boolean,System.Single@,System.Single@,System.Single@)">
-            <summary>
-            Estemate the 3D position of te glyph.
-            </summary>
-            <param name="imageSize">Image size is more like size of the coordinate system.</param>
-            <param name="useCoplanarPosit"></param>
-            <param name="yaw"></param>
-            <param name="pitch"></param>
-            <param name="roll"></param>
-        </member>
-        <member name="M:AForge.Vision.GlyphRecognition.ExtractedGlyphData.PerformProjection(System.Drawing.Size)">
-            <summary>
-            
-            </summary>
-            <param name="imageSize"></param>
-            <returns></returns>
         </member>
         <member name="P:AForge.Vision.GlyphRecognition.ExtractedGlyphData.RecognizedGlyph">
              <summary>

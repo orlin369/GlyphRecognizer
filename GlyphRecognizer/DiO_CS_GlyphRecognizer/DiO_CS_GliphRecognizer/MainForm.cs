@@ -9,22 +9,13 @@ using AForge.Vision.GlyphRecognition;
 using AForge.Imaging.Filters;
 using AForge.Video;
 using AForge.Video.DirectShow;
+using System.Drawing.Drawing2D;
 
 namespace DiO_CS_GliphRecognizer
 {
     public partial class MainForm : Form
     {
         #region Variables
-
-        /// <summary>
-        /// Input image name + path.
-        /// </summary>
-        private string imageFileName = null;
-
-        /// <summary>
-        /// Input image.
-        /// </summary>
-        private Bitmap loadedImage = null;
 
         /// <summary>
         /// Collection of glyph databases.
@@ -255,37 +246,35 @@ namespace DiO_CS_GliphRecognizer
             return tmpBuffer;
         }
 
-        private void DisplayData(List<ExtractedGlyphData> glyphs, string name)
+        private void DisplayGlyphData(List<ExtractedGlyphData> glyphs, string name)
         {
             foreach (ExtractedGlyphData gdata in glyphs)
             {
                 if (gdata.RecognizedGlyph.Name == name)
                 {
+                    // Estimate orientation and position.
                     float yaw = 0.0f;
                     float pitch = 0.0f;
                     float roll = 0.0f;
+                    gdata.EstimateOrientation(true, out yaw, out pitch, out roll);
+                    AForge.Point[] pp = gdata.PerformProjection();
+                    float area = gdata.Area();
 
-                    gdata.Estimate(this.capturedImage.Size, true, out yaw, out pitch, out roll);
-
-                    PointF pc = gdata.Centroid();
-                    string gData = string.Format("Name: {0};\r\nAngles[deg]: (Y:{1:F3}, P{2:F3}, R:{3:F3} \r\nPosition[pix]: X:{4:F3} Y:{5:F3})", gdata.RecognizedGlyph.Name, yaw, pitch, roll, pc.X, pc.Y);
+                    string textData = string.Format("Name: {0};\r\nAngles[deg]: Y: {1:F3}, P: {2:F3}, R: {3:F3} \r\nPosition[pix]: X: {4:F3} Y: {5:F3}\r\n Size: {5:F3}", gdata.RecognizedGlyph.Name, yaw, pitch, roll, pp[0].X, pp[0].Y, area);
                     
                     // Display image.
                     if (this.lblGlyphData.InvokeRequired)
                     {
-                        this.lblGlyphData.BeginInvoke((MethodInvoker)delegate()
-                        {
-                            this.lblGlyphData.Text = gData;
-                        });
+                        this.lblGlyphData.BeginInvoke(
+                            (MethodInvoker)delegate()
+                            {
+                                this.lblGlyphData.Text = textData;
+                            });
                     }
                     else
                     {
-                        this.lblGlyphData.Text = gData;
+                        this.lblGlyphData.Text = textData;
                     }
-
-
-                    //Console.WriteLine("{0}", estimationLabel);
-                    //Application.DoEvents();
                 }
             }
         }
@@ -294,21 +283,55 @@ namespace DiO_CS_GliphRecognizer
         /// Display mage.
         /// </summary>
         /// <param name="image"></param>
-        private void DisplayImage(Bitmap image)
+        private void DisplayGlyphs(Bitmap image, List<ExtractedGlyphData> glyphs)
         {
             // Display image.
             if (this.pbMain.InvokeRequired)
             {
                 this.pbMain.BeginInvoke((MethodInvoker)delegate()
                 {
-                    this.pbMain.Image = image;
-                    this.pbMain.Refresh();
+                    using (Graphics g = Graphics.FromImage((Image)image))
+                    {
+                        //e.Graphics.Clear(Color.White);
+                        if (this.capturedImage != null && this.imageProcessor.VisualizationType == VisualizationType.Image)
+                        {
+                            foreach (ExtractedGlyphData glyph in glyphs)
+                            {
+                                //egd.DrawCentroid(e.Graphics);
+                                glyph.DrawContour(g);
+                                glyph.DrawPoints(g);
+                                glyph.DrawCoordinates(g);
+                                //Console.WriteLine("{0}", egd.RecognizedGlyph.Name);
+                            }
+                        }            
+                    }
+
+                    Bitmap rszImage = this.ResizeImage(image, this.pbMain.Size);
+
+                    this.pbMain.Image = rszImage;
                 });
             }
             else
             {
-                this.pbMain.Image = image;
-                this.pbMain.Refresh();
+                using (Graphics g = Graphics.FromImage((Image)image))
+                {
+                    //e.Graphics.Clear(Color.White);
+                    if (this.capturedImage != null && this.imageProcessor.VisualizationType == VisualizationType.Image)
+                    {
+                        foreach (ExtractedGlyphData egd in this.recognisedGlyphs)
+                        {
+                            //egd.DrawCentroid(e.Graphics);
+                            egd.DrawContour(g);
+                            egd.DrawPoints(g);
+                            egd.DrawCoordinates(g);
+                            //Console.WriteLine("{0}", egd.RecognizedGlyph.Name);
+                        }
+                    }
+                }
+
+                Bitmap rszImage = this.ResizeImage(image, this.pbMain.Size);
+
+                this.pbMain.Image = rszImage;
             }
         }
 
@@ -367,6 +390,47 @@ namespace DiO_CS_GliphRecognizer
 
             // Save it to file.
             image.Save(fileName);
+        }
+
+        /// <summary>
+        /// Resize bitmap images.
+        /// </summary>
+        /// <param name="imgToResize">Source image.</param>
+        /// <param name="size">Output size.</param>
+        /// <returns>Resized new bitmap.</returns>
+        private Bitmap ResizeImage(Bitmap sourceImage, Size size)
+        {
+
+            int sourceWidth = sourceImage.Width;
+            int sourceHeight = sourceImage.Height;
+
+            float nPercent = 0;
+            float nPercentW = 0;
+            float nPercentH = 0;
+
+            nPercentW = ((float)size.Width / (float)sourceWidth);
+            nPercentH = ((float)size.Height / (float)sourceHeight);
+
+            if (nPercentH < nPercentW)
+            {
+                nPercent = nPercentH;
+            }
+            else
+            {
+                nPercent = nPercentW;
+            }
+
+            int destWidth = (int)(sourceWidth * nPercent);
+            int destHeight = (int)(sourceHeight * nPercent);
+
+            Bitmap bitmapImage = new Bitmap(destWidth, destHeight);
+            Graphics graphics = Graphics.FromImage((Image)bitmapImage);
+
+            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            graphics.DrawImage(sourceImage, 0, 0, destWidth, destHeight);
+            graphics.Dispose();
+
+            return bitmapImage;
         }
 
         #endregion
@@ -444,9 +508,9 @@ namespace DiO_CS_GliphRecognizer
 
                 this.recognisedGlyphs = this.ProcessImage(this.capturedImage);
 
-                this.DisplayData(this.recognisedGlyphs, "Test1");
+                this.DisplayGlyphData(this.recognisedGlyphs, "Test1");
 
-                this.DisplayImage(this.capturedImage);
+                this.DisplayGlyphs(this.capturedImage, this.recognisedGlyphs);
             }
         }
 
@@ -454,26 +518,6 @@ namespace DiO_CS_GliphRecognizer
 
         #region Buttons
 
-
-        #endregion
-
-        #region Picture Box
-
-        private void pbMain_Paint(object sender, PaintEventArgs e)
-        {
-            //e.Graphics.Clear(Color.White);
-            if ((this.loadedImage != null || this.capturedImage != null) && this.imageProcessor.VisualizationType == VisualizationType.Image)
-            {
-                foreach (ExtractedGlyphData egd in this.recognisedGlyphs)
-                {
-                    //egd.DrawCentroid(e.Graphics);
-                    //egd.DrawContour(e.Graphics);
-                    egd.DrawPoints(e.Graphics);
-                    egd.DrawCoordinates(e.Graphics);
-                    //Console.WriteLine("{0}", egd.RecognizedGlyph.Name);
-                }
-            }            
-        }
 
         #endregion
         
