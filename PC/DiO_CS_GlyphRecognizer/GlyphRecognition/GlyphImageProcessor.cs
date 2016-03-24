@@ -5,21 +5,16 @@
 // andrew.kirillov@aforgenet.com
 //
 
-using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 
-using AForge;
 using AForge.Math.Geometry;
-using AForge.Imaging;
 using AForge.Imaging.Filters;
-using AForge.Vision.GlyphRecognition;
 using System.Drawing.Drawing2D;
 
-namespace DiO_CS_GliphRecognizer
+namespace AForge.Vision.GlyphRecognition
 {
-    class GlyphImageProcessor
+    public class GlyphImageProcessor
     {
 
         #region Variables
@@ -184,37 +179,37 @@ namespace DiO_CS_GliphRecognizer
                     }
                     else if (VisualizationType == VisualizationType.Image)
                     {
-                        // lock image for further processing
-                        BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height),
-                            ImageLockMode.ReadWrite, bitmap.PixelFormat);
-                        UnmanagedImage unmanagedImage = new UnmanagedImage(bitmapData);
-
-                        // highlight each found glyph
-                        foreach (ExtractedGlyphData glyphData in glyphs)
-                        {
-                            if ((glyphData.RecognizedGlyph != null) && (glyphData.RecognizedGlyph.UserData != null))
-                            {
-                                GlyphVisualizationData visualization =
-                                    (GlyphVisualizationData)glyphData.RecognizedGlyph.UserData;
-
-                                if (visualization.ImageName != null)
-                                {
-                                    // get image associated with the glyph
-                                    Bitmap glyphImage = EmbeddedImageCollection.Instance.GetImage(visualization.ImageName);
-
-                                    if (glyphImage != null)
-                                    {
-                                        // put glyph's image onto the glyph using quadrilateral transformation
-                                        quadrilateralTransformation.SourceImage = glyphImage;
-                                        quadrilateralTransformation.DestinationQuadrilateral = glyphData.RecognizedQuadrilateral;
-
-                                        quadrilateralTransformation.ApplyInPlace(unmanagedImage);
-                                    }
-                                }
-                            }
-                        }
-
-                        bitmap.UnlockBits(bitmapData);
+                        //// lock image for further processing
+                        //BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height),
+                        //    ImageLockMode.ReadWrite, bitmap.PixelFormat);
+                        //UnmanagedImage unmanagedImage = new UnmanagedImage(bitmapData);
+                        //
+                        //// highlight each found glyph
+                        //foreach (ExtractedGlyphData glyphData in glyphs)
+                        //{
+                        //    if ((glyphData.RecognizedGlyph != null) && (glyphData.RecognizedGlyph.UserData != null))
+                        //    {
+                        //        GlyphVisualizationData visualization =
+                        //            (GlyphVisualizationData)glyphData.RecognizedGlyph.UserData;
+                        //
+                        //        if (visualization.ImageName != null)
+                        //        {
+                        //            // get image associated with the glyph
+                        //            Bitmap glyphImage = EmbeddedImageCollection.Instance.GetImage(visualization.ImageName);
+                        //
+                        //            if (glyphImage != null)
+                        //            {
+                        //                // put glyph's image onto the glyph using quadrilateral transformation
+                        //                quadrilateralTransformation.SourceImage = glyphImage;
+                        //                quadrilateralTransformation.DestinationQuadrilateral = glyphData.RecognizedQuadrilateral;
+                        //
+                        //                quadrilateralTransformation.ApplyInPlace(unmanagedImage);
+                        //            }
+                        //        }
+                        //    }
+                        //}
+                        //
+                        //bitmap.UnlockBits(bitmapData);
                     }
                 }
             }

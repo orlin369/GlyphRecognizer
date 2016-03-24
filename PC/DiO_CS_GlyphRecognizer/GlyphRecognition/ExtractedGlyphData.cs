@@ -5,16 +5,15 @@
 // andrew.kirillov@aforgenet.com
 //
 
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+
+using AForge.Math;
+using AForge.Math.Geometry;
+
 namespace AForge.Vision.GlyphRecognition
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Drawing;
-
-    using AForge;
-    using AForge.Math;
-    using AForge.Math.Geometry;
-
     /// <summary>
     /// Information about the glyph extracted from an image using <see cref="GlyphRecognizer"/>.
     /// </summary>
@@ -296,7 +295,7 @@ namespace AForge.Vision.GlyphRecognition
         public double Perimeter()
         {
             // Calculate the circumference with X(area).
-            return Math.Sqrt((4 / Math.PI) * this.Area()) * Math.PI;
+            return System.Math.Sqrt((4 / System.Math.PI) * this.Area()) * System.Math.PI;
         }
 
         /// <summary>
@@ -534,8 +533,8 @@ namespace AForge.Vision.GlyphRecognition
             AForge.Point[] imPoints = new AForge.Point[4];
             for (int index = 0; index < this.Quadrilateral.Count; index++)
             {
-                float x = System.Math.Max(0, Math.Min(this.Quadrilateral[index].X, this.CoordinateSystemSize.Width - 1));
-                float y = System.Math.Max(0, Math.Min(this.Quadrilateral[index].Y, this.CoordinateSystemSize.Height - 1));
+                float x = System.Math.Max(0, System.Math.Min(this.Quadrilateral[index].X, this.CoordinateSystemSize.Width - 1));
+                float y = System.Math.Max(0, System.Math.Min(this.Quadrilateral[index].Y, this.CoordinateSystemSize.Height - 1));
 
                 imPoints[index] = new AForge.Point(x - this.CoordinateSystemSize.Width / 2, this.CoordinateSystemSize.Height / 2 - y);
             }

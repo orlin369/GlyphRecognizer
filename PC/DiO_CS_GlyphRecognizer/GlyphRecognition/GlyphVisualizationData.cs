@@ -8,10 +8,10 @@
 using System;
 using System.Drawing;
 
-namespace DiO_CS_GliphRecognizer
+namespace AForge.Vision.GlyphRecognition
 {
     // Data used for visualization of recognized glyph
-    struct GlyphVisualizationData
+    public class GlyphVisualizationData
     {
         // Color to use for highlight and glyph name
         public Color Color;

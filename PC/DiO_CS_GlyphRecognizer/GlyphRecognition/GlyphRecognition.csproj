@@ -91,13 +91,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration.cs" />
     <Compile Include="ExtractedGlyphData.cs" />
     <Compile Include="Glyph.cs" />
     <Compile Include="GlyphDatabase.cs" />
+    <Compile Include="GlyphDatabases.cs" />
+    <Compile Include="GlyphImageProcessor.cs" />
     <Compile Include="GlyphRecognizer.cs" />
     <Compile Include="GlyphTracker.cs" />
+    <Compile Include="GlyphVisualizationData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SquareBinaryGlyphRecognizer.cs" />
+    <Compile Include="VisualizationType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

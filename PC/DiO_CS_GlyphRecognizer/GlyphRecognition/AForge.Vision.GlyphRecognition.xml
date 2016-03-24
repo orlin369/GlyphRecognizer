@@ -502,6 +502,73 @@
             glyph does not exist.</returns>
             
         </member>
+        <member name="F:AForge.Vision.GlyphRecognition.GlyphImageProcessor.recognizer">
+            <summary>
+            Glyph recognizer to use for glyph recognition in video.
+            </summary>
+        </member>
+        <member name="F:AForge.Vision.GlyphRecognition.GlyphImageProcessor.glyphTracker">
+            <summary>
+            Glyph tracker to track position of glyphs.
+            </summary>
+        </member>
+        <member name="F:AForge.Vision.GlyphRecognition.GlyphImageProcessor.quadrilateralTransformation">
+            <summary>
+            Quadrilateral transformation used to put image in place of glyph.
+            </summary>
+        </member>
+        <member name="F:AForge.Vision.GlyphRecognition.GlyphImageProcessor.defaultFont">
+            <summary>
+            Default font to highlight glyphs.
+            </summary>
+        </member>
+        <member name="F:AForge.Vision.GlyphRecognition.GlyphImageProcessor.sync">
+            <summary>
+            Object used for synchronization.
+            </summary>
+        </member>
+        <member name="F:AForge.Vision.GlyphRecognition.GlyphImageProcessor.VisualizationType">
+            <summary>
+            Visualization types.
+            </summary>
+            <remarks>
+            VisualizationType.Image - last state of the engine.
+            </remarks>
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphImageProcessor.ProcessImage(System.Drawing.Bitmap)">
+            <summary>
+            Process image searching for glyphs and highlighting them.
+            </summary>
+            <param name="bitmap">Image for processing.</param>
+            <returns>List of the recognised glyphs.</returns>
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphImageProcessor.Reset">
+            <summary>
+            Reset glyph processor to initial state.
+            </summary>
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.GlyphImageProcessor.ToPointsArray(System.Collections.Generic.List{AForge.IntPoint})">
+            <summary>
+            Convert list of AForge.NET framework's points to array of .NET's points
+            </summary>
+            <param name="points">List of AForg points.</param>
+            <returns>Array of .NET point.</returns>
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.GlyphImageProcessor.GlyphDatabase">
+            <summary>
+            Database of glyphs to recognize.
+            </summary>
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.GlyphImageProcessor.CameraFocalLength">
+            <summary>
+            Effective focal length of camera.
+            </summary>
+        </member>
+        <member name="P:AForge.Vision.GlyphRecognition.GlyphImageProcessor.GlyphSize">
+            <summary>
+            Real size of glyphs.
+            </summary>
+        </member>
         <member name="T:AForge.Vision.GlyphRecognition.GlyphRecognizer">
             <summary>
             The class locates and recognizes glyphs in a specified image.
@@ -841,6 +908,31 @@
              <para>Default value is set to <b>5</b>.</para>
              </remarks>
             
+        </member>
+        <member name="T:AForge.Vision.GlyphRecognition.VisualizationType">
+            <summary>
+            Enumeration of visualization types.
+            </summary>
+        </member>
+        <member name="F:AForge.Vision.GlyphRecognition.VisualizationType.BorderOnly">
+            <summary>
+            Hightlight glyph with border only.
+            </summary>
+        </member>
+        <member name="F:AForge.Vision.GlyphRecognition.VisualizationType.Name">
+            <summary>
+            Hightlight glyph with border and put its name in the center.
+            </summary>
+        </member>
+        <member name="F:AForge.Vision.GlyphRecognition.VisualizationType.Image">
+            <summary>
+            Substitue glyph with its image.
+            </summary>
+        </member>
+        <member name="F:AForge.Vision.GlyphRecognition.VisualizationType.Model">
+            <summary>
+            Show 3D model over the glyph.
+            </summary>
         </member>
     </members>
 </doc>

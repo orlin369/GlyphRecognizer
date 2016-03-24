@@ -10,12 +10,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace DiO_CS_GliphRecognizer
+namespace AForge.Vision.GlyphRecognition
 {
     /// <summary>
     /// Enumeration of visualization types.
     /// </summary>
-    enum VisualizationType
+    public enum VisualizationType
     {
         /// <summary>
         /// Hightlight glyph with border only.

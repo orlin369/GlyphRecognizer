@@ -12,9 +12,9 @@ using System.Text;
 using System.IO;
 using System.Xml;
 
-namespace DiO_CS_GliphRecognizer
+namespace AForge.Vision.GlyphRecognition
 {
-    class Configuration
+    public class Configuration
     {
         private static Configuration singleton = null;
 

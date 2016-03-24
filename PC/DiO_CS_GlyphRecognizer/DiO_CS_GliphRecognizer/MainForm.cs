@@ -11,17 +11,20 @@ using AForge.Video;
 using AForge.Video.DirectShow;
 using System.Drawing.Drawing2D;
 
+// C:\Users\DiO\AppData\Local\AForge
+
 namespace DiO_CS_GliphRecognizer
 {
     public partial class MainForm : Form
     {
+
         #region Variables
 
         /// <summary>
         /// Collection of glyph databases.
         /// </summary>
         private GlyphDatabases glyphDatabases = new GlyphDatabases();
-
+        
         /// <summary>
         /// Image processor.
         /// </summary>

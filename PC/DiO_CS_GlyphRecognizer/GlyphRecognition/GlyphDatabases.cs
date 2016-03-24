@@ -12,11 +12,9 @@ using System.IO;
 using System.Xml;
 using System.Drawing;
 
-using AForge.Vision.GlyphRecognition;
-
-namespace DiO_CS_GliphRecognizer
+namespace AForge.Vision.GlyphRecognition
 {
-    class GlyphDatabases
+    public class GlyphDatabases
     {
         private Dictionary<string, GlyphDatabase> dbs = new Dictionary<string, GlyphDatabase>( );
 
