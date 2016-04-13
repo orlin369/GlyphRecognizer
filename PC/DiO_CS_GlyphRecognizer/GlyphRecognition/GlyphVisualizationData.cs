@@ -20,7 +20,7 @@ namespace AForge.Vision.GlyphRecognition
         // 3D model name to show for the glyph
         public string ModelName;
 
-        public GlyphVisualizationData( Color color )
+        public GlyphVisualizationData(Color color)
         {
             Color = color;
             ImageName = null;

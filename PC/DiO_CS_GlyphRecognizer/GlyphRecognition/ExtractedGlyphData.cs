@@ -252,7 +252,7 @@ namespace AForge.Vision.GlyphRecognition
         /// </summary>
         /// <returns>Centroid point.</returns>
         public PointF Centroid()
-        {            
+        {
             // Add the first point at the end of the array.
             int num_points = this.Quadrilateral.Count;
             IntPoint[] points = new IntPoint[num_points + 1];

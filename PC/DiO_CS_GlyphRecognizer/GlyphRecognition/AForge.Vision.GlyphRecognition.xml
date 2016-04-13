@@ -502,32 +502,32 @@
             glyph does not exist.</returns>
             
         </member>
-        <member name="F:AForge.Vision.GlyphRecognition.GlyphImageProcessor.recognizer">
+        <member name="F:DiO_CS_GliphRecognizer.GlyphImageProcessor.recognizer">
             <summary>
             Glyph recognizer to use for glyph recognition in video.
             </summary>
         </member>
-        <member name="F:AForge.Vision.GlyphRecognition.GlyphImageProcessor.glyphTracker">
+        <member name="F:DiO_CS_GliphRecognizer.GlyphImageProcessor.glyphTracker">
             <summary>
             Glyph tracker to track position of glyphs.
             </summary>
         </member>
-        <member name="F:AForge.Vision.GlyphRecognition.GlyphImageProcessor.quadrilateralTransformation">
+        <member name="F:DiO_CS_GliphRecognizer.GlyphImageProcessor.quadrilateralTransformation">
             <summary>
             Quadrilateral transformation used to put image in place of glyph.
             </summary>
         </member>
-        <member name="F:AForge.Vision.GlyphRecognition.GlyphImageProcessor.defaultFont">
+        <member name="F:DiO_CS_GliphRecognizer.GlyphImageProcessor.defaultFont">
             <summary>
             Default font to highlight glyphs.
             </summary>
         </member>
-        <member name="F:AForge.Vision.GlyphRecognition.GlyphImageProcessor.sync">
+        <member name="F:DiO_CS_GliphRecognizer.GlyphImageProcessor.sync">
             <summary>
             Object used for synchronization.
             </summary>
         </member>
-        <member name="F:AForge.Vision.GlyphRecognition.GlyphImageProcessor.VisualizationType">
+        <member name="F:DiO_CS_GliphRecognizer.GlyphImageProcessor.VisualizationType">
             <summary>
             Visualization types.
             </summary>
@@ -535,36 +535,36 @@
             VisualizationType.Image - last state of the engine.
             </remarks>
         </member>
-        <member name="M:AForge.Vision.GlyphRecognition.GlyphImageProcessor.ProcessImage(System.Drawing.Bitmap)">
+        <member name="M:DiO_CS_GliphRecognizer.GlyphImageProcessor.ProcessImage(System.Drawing.Bitmap)">
             <summary>
             Process image searching for glyphs and highlighting them.
             </summary>
             <param name="bitmap">Image for processing.</param>
             <returns>List of the recognised glyphs.</returns>
         </member>
-        <member name="M:AForge.Vision.GlyphRecognition.GlyphImageProcessor.Reset">
+        <member name="M:DiO_CS_GliphRecognizer.GlyphImageProcessor.Reset">
             <summary>
             Reset glyph processor to initial state.
             </summary>
         </member>
-        <member name="M:AForge.Vision.GlyphRecognition.GlyphImageProcessor.ToPointsArray(System.Collections.Generic.List{AForge.IntPoint})">
+        <member name="M:DiO_CS_GliphRecognizer.GlyphImageProcessor.ToPointsArray(System.Collections.Generic.List{AForge.IntPoint})">
             <summary>
             Convert list of AForge.NET framework's points to array of .NET's points
             </summary>
             <param name="points">List of AForg points.</param>
             <returns>Array of .NET point.</returns>
         </member>
-        <member name="P:AForge.Vision.GlyphRecognition.GlyphImageProcessor.GlyphDatabase">
+        <member name="P:DiO_CS_GliphRecognizer.GlyphImageProcessor.GlyphDatabase">
             <summary>
             Database of glyphs to recognize.
             </summary>
         </member>
-        <member name="P:AForge.Vision.GlyphRecognition.GlyphImageProcessor.CameraFocalLength">
+        <member name="P:DiO_CS_GliphRecognizer.GlyphImageProcessor.CameraFocalLength">
             <summary>
             Effective focal length of camera.
             </summary>
         </member>
-        <member name="P:AForge.Vision.GlyphRecognition.GlyphImageProcessor.GlyphSize">
+        <member name="P:DiO_CS_GliphRecognizer.GlyphImageProcessor.GlyphSize">
             <summary>
             Real size of glyphs.
             </summary>

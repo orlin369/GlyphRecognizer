@@ -91,7 +91,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration.cs" />
     <Compile Include="ExtractedGlyphData.cs" />
     <Compile Include="Glyph.cs" />
     <Compile Include="GlyphDatabase.cs" />

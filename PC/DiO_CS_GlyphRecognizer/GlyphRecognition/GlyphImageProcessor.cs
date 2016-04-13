@@ -11,12 +11,15 @@ using System.Drawing;
 using AForge.Math.Geometry;
 using AForge.Imaging.Filters;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using AForge.Imaging;
+using AForge.Vision.GlyphRecognition;
+using AForge;
 
-namespace AForge.Vision.GlyphRecognition
+namespace DiO_CS_GliphRecognizer
 {
     public class GlyphImageProcessor
     {
-
         #region Variables
 
         /// <summary>
@@ -102,6 +105,8 @@ namespace AForge.Vision.GlyphRecognition
         {
             List<ExtractedGlyphData> glyphs = new List<ExtractedGlyphData>();
 
+            // TODO: Create properties that draw the properties of the glyph.
+
             lock (sync)
             {
                 glyphTracker.ImageSize = bitmap.Size;
@@ -123,8 +128,6 @@ namespace AForge.Vision.GlyphRecognition
                         g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                         //g.SmoothingMode = SmoothingMode.HighQuality;
                         //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-
-
 
                         int i = 0;
 
@@ -179,37 +182,37 @@ namespace AForge.Vision.GlyphRecognition
                     }
                     else if (VisualizationType == VisualizationType.Image)
                     {
-                        //// lock image for further processing
-                        //BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height),
-                        //    ImageLockMode.ReadWrite, bitmap.PixelFormat);
-                        //UnmanagedImage unmanagedImage = new UnmanagedImage(bitmapData);
-                        //
-                        //// highlight each found glyph
-                        //foreach (ExtractedGlyphData glyphData in glyphs)
-                        //{
-                        //    if ((glyphData.RecognizedGlyph != null) && (glyphData.RecognizedGlyph.UserData != null))
-                        //    {
-                        //        GlyphVisualizationData visualization =
-                        //            (GlyphVisualizationData)glyphData.RecognizedGlyph.UserData;
-                        //
-                        //        if (visualization.ImageName != null)
-                        //        {
-                        //            // get image associated with the glyph
-                        //            Bitmap glyphImage = EmbeddedImageCollection.Instance.GetImage(visualization.ImageName);
-                        //
-                        //            if (glyphImage != null)
-                        //            {
-                        //                // put glyph's image onto the glyph using quadrilateral transformation
-                        //                quadrilateralTransformation.SourceImage = glyphImage;
-                        //                quadrilateralTransformation.DestinationQuadrilateral = glyphData.RecognizedQuadrilateral;
-                        //
-                        //                quadrilateralTransformation.ApplyInPlace(unmanagedImage);
-                        //            }
-                        //        }
-                        //    }
-                        //}
-                        //
-                        //bitmap.UnlockBits(bitmapData);
+                        // lock image for further processing
+                        BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height),
+                            ImageLockMode.ReadWrite, bitmap.PixelFormat);
+                        UnmanagedImage unmanagedImage = new UnmanagedImage(bitmapData);
+                        
+                        // highlight each found glyph
+                        foreach (ExtractedGlyphData glyphData in glyphs)
+                        {
+                            if ((glyphData.RecognizedGlyph != null) && (glyphData.RecognizedGlyph.UserData != null))
+                            {
+                                GlyphVisualizationData visualization =
+                                    (GlyphVisualizationData)glyphData.RecognizedGlyph.UserData;
+                        
+                                if (visualization.ImageName != null)
+                                {
+                                    // get image associated with the glyph
+                                    Bitmap glyphImage = bitmap;
+                        
+                                    if (glyphImage != null)
+                                    {
+                                        // put glyph's image onto the glyph using quadrilateral transformation
+                                        quadrilateralTransformation.SourceImage = glyphImage;
+                                        quadrilateralTransformation.DestinationQuadrilateral = glyphData.RecognizedQuadrilateral;
+                        
+                                        quadrilateralTransformation.ApplyInPlace(unmanagedImage);
+                                    }
+                                }
+                            }
+                        }
+                        
+                        bitmap.UnlockBits(bitmapData);
                     }
                 }
             }

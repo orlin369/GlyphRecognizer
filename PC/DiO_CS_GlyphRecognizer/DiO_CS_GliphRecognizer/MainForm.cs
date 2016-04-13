@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Windows.Forms;
-
-using AForge;
-using AForge.Vision.GlyphRecognition;
+﻿using AForge;
 using AForge.Imaging.Filters;
 using AForge.Video;
 using AForge.Video.DirectShow;
+using AForge.Vision.GlyphRecognition;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Drawing2D;
-
-// C:\Users\DiO\AppData\Local\AForge
+using System.Drawing.Imaging;
+using System.Windows.Forms;
 
 namespace DiO_CS_GliphRecognizer
 {
@@ -23,45 +20,42 @@ namespace DiO_CS_GliphRecognizer
         /// <summary>
         /// Collection of glyph databases.
         /// </summary>
-        private GlyphDatabases glyphDatabases = new GlyphDatabases();
-        
-        /// <summary>
-        /// Image processor.
-        /// </summary>
-        private GlyphImageProcessor imageProcessor = new GlyphImageProcessor();
+        private GlyphDatabases glyphDatabases;
 
         /// <summary>
-        /// Sync objec.
+        /// Glyph recognizer to use for glyph recognition in video.
         /// </summary>
-        private Object syncLock = new Object();
+        private GlyphRecognizer recognizer;
 
         /// <summary>
         /// Recogniesed database.
         /// </summary>
-        private List<ExtractedGlyphData> recognisedGlyphs = new List<ExtractedGlyphData>();
+        private List<ExtractedGlyphData> recognisedGlyphs;
 
         /// <summary>
         /// Video source.
         /// </summary>
-        VideoCaptureDevice videoSource = null;
+        private VideoCaptureDevice videoSource;
 
         /// <summary>
         /// Captured image.
         /// </summary>
-        private Bitmap capturedImage = null;
+        private Bitmap capturedImage;
+
+        /// <summary>
+        /// Sync objec.
+        /// </summary>
+        private object syncLock;
 
         /// <summary>
         /// Image point of the object to estimate pose for.
         /// </summary>
-        private AForge.Point[] imagePoints = new AForge.Point[4];
+        private AForge.Point[] imagePoints;
 
         /// <summary>
         /// Colors used to highlight points on image.
         /// </summary>
-        private Color[] pointsColors = new Color[4]
-        {
-            Color.Yellow, Color.Blue, Color.Red, Color.Lime
-        };
+        private Color[] pointsColors;
 
         #endregion
 
@@ -89,11 +83,58 @@ namespace DiO_CS_GliphRecognizer
         public MainForm()
         {
             InitializeComponent();
+
+            this.glyphDatabases = new GlyphDatabases();
+            this.syncLock = new object();
+            this.recognisedGlyphs = new List<ExtractedGlyphData>();
+            this.imagePoints = new AForge.Point[4];
+            this.pointsColors = new Color[4]
+            {
+                Color.Yellow,
+                Color.Blue,
+                Color.Red,
+                Color.Lime
+            };
         }
 
         #endregion
 
         #region Private
+
+        /// <summary>
+        /// Create glyph data.
+        /// This method is example.
+        /// </summary>
+        private void CreateGlyph()
+        {
+            // Glyph name.
+            string glyphName = "Test1";
+            // Glyph size.
+            const int glyphSize = 5;
+            // Glyph data.
+            byte[,] glyphData = new byte[glyphSize, glyphSize]
+            {
+                {0, 0, 0, 0, 0},
+                {0, 0, 1, 0, 0},
+                {0, 1, 1, 1, 0},
+                {0, 1, 0, 0, 0},
+                {0, 0, 0, 0, 0}
+            };
+
+            // Create glyph.
+            Glyph testGlyph = new Glyph(glyphName, glyphData);
+
+            // Glyph user data.
+            testGlyph.UserData = new GlyphVisualizationData(Color.Blue);
+
+            // Generate image from the glyph.
+            Bitmap image = testGlyph.CreateGlyphImage(500);
+
+            string fileName = String.Format("Glyph_{0}_{1}x{1}.PNG", glyphName, glyphSize);
+
+            // Save it to file.
+            image.Save(fileName);
+        }
 
         /// <summary>
         /// Refresh the list displaying available databases of glyphss
@@ -156,19 +197,10 @@ namespace DiO_CS_GliphRecognizer
             // Add database.
             this.glyphDatabases.AddGlyphDatabase(dbName, lGlyphDatabase);
 
-            // set the database to image processor ...
-            this.imageProcessor.GlyphDatabase = this.glyphDatabases[dbName];
+            this.recognizer = new GlyphRecognizer(glyphSize);
 
-            /*
-            // List the database size.
-            List<string> dbNames = this.glyphDatabases.GetDatabaseNames();
-            
-            foreach (string name in dbNames)
-            {
-                GlyphDatabase db = glyphDatabases[name];
-                Console.WriteLine(string.Format("Name:{0}; Size:{1}x{2}", name, db.Size, db.Size));
-            }
-            */
+            // set the database to image processor ...
+            this.recognizer.GlyphDatabase = this.glyphDatabases[dbName]; ;
         }
 
         /// <summary>
@@ -211,49 +243,22 @@ namespace DiO_CS_GliphRecognizer
             // Add database.
             this.glyphDatabases.AddGlyphDatabase(dbName, lGlyphDatabase);
 
+            this.recognizer = new GlyphRecognizer(glyphSize);
+            
             // set the database to image processor ...
-            this.imageProcessor.GlyphDatabase = this.glyphDatabases[dbName];
+            this.recognizer.GlyphDatabase = this.glyphDatabases[dbName];
         }
 
-        private List<ExtractedGlyphData> ProcessImage(Bitmap image)
-        {
-            List<ExtractedGlyphData> tmpBuffer = new List<ExtractedGlyphData>();
-            tmpBuffer.Clear();
-
-            if (this.capturedImage.PixelFormat == PixelFormat.Format8bppIndexed)
-            {
-                // convert image to RGB if it is grayscale
-                GrayscaleToRGB filter = new GrayscaleToRGB();
-                Bitmap temp = filter.Apply(this.capturedImage);
-                this.capturedImage.Dispose();
-                this.capturedImage = temp;
-            }
-
-            List<ExtractedGlyphData> glyphs = imageProcessor.ProcessImage(image);
-
-            foreach (ExtractedGlyphData glyph in glyphs)
-            {
-                if ((glyph.RecognizedGlyph != null) &&
-                     (glyph.RecognizedGlyph.UserData != null) &&
-                     (glyph.RecognizedGlyph.UserData is GlyphVisualizationData) &&
-                     (glyph.IsTransformationDetected))
-                {
-
-                    tmpBuffer.Add(glyph);
-
-                    //List<System.Drawing.Point> points = this.ConvertToPoint(glyph.Quadrilateral);
-                    //this.lblGlyphData.Text = String.Format("Glyph: {0}, Center: {1}", glyph.RecognizedGlyph.Name, glyph.Centroid().ToString());
-                }
-            }
-
-            return tmpBuffer;
-        }
-
+        /// <summary>
+        /// Display glyph data.
+        /// </summary>
+        /// <param name="glyphs"></param>
+        /// <param name="name"></param>
         private void DisplayGlyphData(List<ExtractedGlyphData> glyphs, string name)
         {
             foreach (ExtractedGlyphData gdata in glyphs)
             {
-                if (gdata.RecognizedGlyph.Name == name)
+                if (gdata.RecognizedGlyph != null && gdata.RecognizedGlyph.Name == name)
                 {
                     // Estimate orientation and position.
                     float yaw = 0.0f;
@@ -278,6 +283,8 @@ namespace DiO_CS_GliphRecognizer
                     {
                         this.lblGlyphData.Text = textData;
                     }
+
+                    break;
                 }
             }
         }
@@ -296,7 +303,7 @@ namespace DiO_CS_GliphRecognizer
                     using (Graphics g = Graphics.FromImage((Image)image))
                     {
                         //e.Graphics.Clear(Color.White);
-                        if (this.capturedImage != null && this.imageProcessor.VisualizationType == VisualizationType.Image)
+                        if (this.capturedImage != null)
                         {
                             foreach (ExtractedGlyphData glyph in glyphs)
                             {
@@ -304,12 +311,13 @@ namespace DiO_CS_GliphRecognizer
                                 glyph.DrawContour(g);
                                 glyph.DrawPoints(g);
                                 glyph.DrawCoordinates(g);
+                                
                                 //Console.WriteLine("{0}", egd.RecognizedGlyph.Name);
                             }
                         }            
                     }
 
-                    Bitmap rszImage = this.ResizeImage(image, this.pbMain.Size);
+                    Bitmap rszImage = Utils.ResizeImage(image, this.pbMain.Size);
 
                     this.pbMain.Image = rszImage;
                 });
@@ -319,7 +327,7 @@ namespace DiO_CS_GliphRecognizer
                 using (Graphics g = Graphics.FromImage((Image)image))
                 {
                     //e.Graphics.Clear(Color.White);
-                    if (this.capturedImage != null && this.imageProcessor.VisualizationType == VisualizationType.Image)
+                    if (this.capturedImage != null)
                     {
                         foreach (ExtractedGlyphData egd in this.recognisedGlyphs)
                         {
@@ -332,108 +340,10 @@ namespace DiO_CS_GliphRecognizer
                     }
                 }
 
-                Bitmap rszImage = this.ResizeImage(image, this.pbMain.Size);
+                Bitmap rszImage = Utils.ResizeImage(image, this.pbMain.Size);
 
                 this.pbMain.Image = rszImage;
             }
-        }
-
-        /// <summary>
-        /// Convert AForge integer points to .NET point.
-        /// </summary>
-        /// <param name="points">AForge points.</param>
-        /// <returns>DotNET points.</returns>
-        private List<System.Drawing.Point> ConvertToPoint(List<IntPoint> points)
-        {
-            if (points == null)
-            {
-                throw new NullReferenceException("Points can not be null.");
-            }
-
-            List<System.Drawing.Point> netPoints = new List<System.Drawing.Point>();
-
-            foreach (IntPoint p in points)
-            {
-                netPoints.Add(new System.Drawing.Point(p.X, p.Y));
-            }
-
-            return netPoints;
-        }
-
-        /// <summary>
-        /// Create glyph data.
-        /// This method is example.
-        /// </summary>
-        private void CreateGlyph()
-        {
-            // Glyph name.
-            string glyphName = "Test1";
-            // Glyph size.
-            const int glyphSize = 5;
-            // Glyph data.
-            byte[,] glyphData = new byte[glyphSize, glyphSize]
-            {
-                {0, 0, 0, 0, 0},
-                {0, 0, 1, 0, 0},
-                {0, 1, 1, 1, 0},
-                {0, 1, 0, 0, 0},
-                {0, 0, 0, 0, 0}
-            };
-
-            // Create glyph.
-            Glyph testGlyph = new Glyph(glyphName, glyphData);
-
-            // Glyph user data.
-            testGlyph.UserData = new GlyphVisualizationData(Color.Blue);
-
-            // Generate image from the glyph.
-            Bitmap image = testGlyph.CreateGlyphImage(500);
-
-            string fileName = String.Format("Glyph_{0}_{1}x{1}.PNG", glyphName, glyphSize);
-
-            // Save it to file.
-            image.Save(fileName);
-        }
-
-        /// <summary>
-        /// Resize bitmap images.
-        /// </summary>
-        /// <param name="imgToResize">Source image.</param>
-        /// <param name="size">Output size.</param>
-        /// <returns>Resized new bitmap.</returns>
-        private Bitmap ResizeImage(Bitmap sourceImage, Size size)
-        {
-
-            int sourceWidth = sourceImage.Width;
-            int sourceHeight = sourceImage.Height;
-
-            float nPercent = 0;
-            float nPercentW = 0;
-            float nPercentH = 0;
-
-            nPercentW = ((float)size.Width / (float)sourceWidth);
-            nPercentH = ((float)size.Height / (float)sourceHeight);
-
-            if (nPercentH < nPercentW)
-            {
-                nPercent = nPercentH;
-            }
-            else
-            {
-                nPercent = nPercentW;
-            }
-
-            int destWidth = (int)(sourceWidth * nPercent);
-            int destHeight = (int)(sourceHeight * nPercent);
-
-            Bitmap bitmapImage = new Bitmap(destWidth, destHeight);
-            Graphics graphics = Graphics.FromImage((Image)bitmapImage);
-
-            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            graphics.DrawImage(sourceImage, 0, 0, destWidth, destHeight);
-            graphics.Dispose();
-
-            return bitmapImage;
         }
 
         #endregion
@@ -442,41 +352,26 @@ namespace DiO_CS_GliphRecognizer
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            // load configuratio
-            Configuration config = Configuration.Instance;
+            //this.LoadGlyphDatabases12();
+            this.LoadGlyphDatabases5();
 
-            if (config.Load(this.glyphDatabases))
+            try
             {
-                //this.LoadGlyphDatabases12();
-                this.LoadGlyphDatabases5();
-                
-                try
-                {
-                    bool autoDetectFocalLength = bool.Parse(config.GetConfigurationOption(autoDetectFocalLengthOption));
-                    this.imageProcessor.GlyphSize = float.Parse(config.GetConfigurationOption(glyphSizeOption));
-                    
-                    if (!autoDetectFocalLength)
-                    {
-                        this.imageProcessor.CameraFocalLength = float.Parse(config.GetConfigurationOption(focalLengthOption));
-                    }
+                // Enumerate video devices
+                FilterInfoCollection videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+                // Create video source
+                this.videoSource = new VideoCaptureDevice(videoDevices[1].MonikerString);
+                // Set NewFrame event handler
+                this.videoSource.NewFrame += new NewFrameEventHandler(this.video_NewFrame);
+                // Start the video source
+                this.videoSource.Start();
 
 
-                    // Enumerate video devices
-                    FilterInfoCollection videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
-                    // Create video source
-                    this.videoSource = new VideoCaptureDevice(videoDevices[1].MonikerString);
-                    // Set NewFrame event handler
-                    this.videoSource.NewFrame += new NewFrameEventHandler(this.video_NewFrame);
-                    // Start the video source
-                    this.videoSource.Start();
-
-
-                }
-                catch(Exception exception)
-                {
-                    MessageBox.Show(exception.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }            
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -499,21 +394,43 @@ namespace DiO_CS_GliphRecognizer
 
         private void video_NewFrame(object sender, NewFrameEventArgs eventArgs)
         {
-            lock (this.syncLock)
+            lock(this.syncLock)
             {
+                // Dispose last frame.
+                if (this.capturedImage != null)
+                {
+                    //this.capturedImage.Dispose();
+                }
                 // Clone the content.
                 this.capturedImage = (Bitmap)eventArgs.Frame.Clone();
 
+                // Exif there is a problem with data cloning.
                 if (this.capturedImage == null)
                 {
                     return;
                 }
 
-                this.recognisedGlyphs = this.ProcessImage(this.capturedImage);
+                // Convert image to RGB if it is grayscale.
+                if (this.capturedImage.PixelFormat == PixelFormat.Format8bppIndexed)
+                {
+                    GrayscaleToRGB filter = new GrayscaleToRGB();
+                    Bitmap temp = filter.Apply(this.capturedImage);
+                    this.capturedImage.Dispose();
+                    this.capturedImage = temp;
+                }
 
+                //TODO: Make preprocessing hear if it is needed.
+
+
+                // Create tmp buffer.
+                List<ExtractedGlyphData> tmpGlyps = recognizer.FindGlyphs(this.capturedImage);
+                // Rewrite the glyph buffer.
+                this.recognisedGlyphs = tmpGlyps;
+                // Display image data.
                 this.DisplayGlyphData(this.recognisedGlyphs, "Test1");
-
+                // 
                 this.DisplayGlyphs(this.capturedImage, this.recognisedGlyphs);
+
             }
         }
 
