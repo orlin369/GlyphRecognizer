@@ -360,7 +360,7 @@ namespace DiO_CS_GliphRecognizer
                 // Enumerate video devices
                 FilterInfoCollection videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
                 // Create video source
-                this.videoSource = new VideoCaptureDevice(videoDevices[1].MonikerString);
+                this.videoSource = new VideoCaptureDevice(videoDevices[0].MonikerString);
                 // Set NewFrame event handler
                 this.videoSource.NewFrame += new NewFrameEventHandler(this.video_NewFrame);
                 // Start the video source

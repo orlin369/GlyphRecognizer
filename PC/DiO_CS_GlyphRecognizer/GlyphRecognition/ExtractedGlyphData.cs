@@ -240,7 +240,7 @@ namespace AForge.Vision.GlyphRecognition
             this.Quadrilateral = quadrilateral;
             this.RawData = rawData;
             this.Confidence = confidence;
-            this.CoordinateSystemSize = size;
+            CoordinateSystemSize = size;
         }
 
         #endregion
