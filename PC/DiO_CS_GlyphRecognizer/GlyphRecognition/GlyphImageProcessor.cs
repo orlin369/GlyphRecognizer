@@ -7,14 +7,14 @@
 
 using System.Collections.Generic;
 using System.Drawing;
-
-using AForge.Math.Geometry;
-using AForge.Imaging.Filters;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using AForge.Imaging;
+
 using AForge.Vision.GlyphRecognition;
 using AForge;
+using AForge.Imaging.Filters;
+using AForge.Math.Geometry;
+using AForge.Imaging;
 
 namespace DiO_CS_GliphRecognizer
 {
