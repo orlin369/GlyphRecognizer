@@ -12,7 +12,7 @@ using System.Drawing;
 using AForge.Math;
 using AForge.Math.Geometry;
 
-namespace AForge.Vision.GlyphRecognition
+namespace AForge.Vision.GlyphRecognition.Data
 {
     /// <summary>
     /// Information about the glyph extracted from an image using <see cref="GlyphRecognizer"/>.
@@ -21,11 +21,6 @@ namespace AForge.Vision.GlyphRecognition
     {
 
         #region Variables
-
-        /// <summary>
-        /// Draw syncronizer.
-        /// </summary>
-        private Object drawLock = new Object();
    
         /// <summary>
         /// Quadrilateral of the raw glyph detected (see <see cref="RawData"/>). First point
@@ -34,7 +29,7 @@ namespace AForge.Vision.GlyphRecognition
         public readonly List<IntPoint> Quadrilateral;
 
         /// <summary>
-        /// Raw glyph data extacted from processed image.
+        /// Raw glyph data extracted from processed image.
         /// </summary>
         public readonly byte[,] RawData;
 
@@ -56,14 +51,6 @@ namespace AForge.Vision.GlyphRecognition
         private Matrix4x4 transformationMatrix;
 
         private bool isTransformationDetected = false;
-
-        /// <summary>
-        /// Colors used to highlight points on image.
-        /// </summary>
-        private Color[] pointsColors = new Color[4]
-        {
-            Color.Yellow, Color.Blue, Color.Red, Color.Lime
-        };
 
         #region Estimation
 
@@ -139,7 +126,6 @@ namespace AForge.Vision.GlyphRecognition
         /// in the specified glyphs' database (see <see cref="GlyphRecognizer.GlyphDatabase"/>. If a match is found
         /// then this property is set to the matching glyph. Otherwise it is set to <see langword="null"/>.
         /// </para></remarks>
-        ///
         public Glyph RecognizedGlyph
         {
             get { return recognizedGlyph; }
@@ -160,7 +146,6 @@ namespace AForge.Vision.GlyphRecognition
         /// <para>This property is always set together with <see cref="RecognizedGlyph"/> on successful glyph matching. Otherwise
         /// it is set to <see langword="null"/>.</para>
         /// </remarks>
-        /// 
         public List<IntPoint> RecognizedQuadrilateral
         {
             get { return recognizedQuadrilateral; }
@@ -174,7 +159,6 @@ namespace AForge.Vision.GlyphRecognition
         /// <remarks><para>The property provides real world glyph's transformation, which is
         /// estimated by <see cref="GlyphTracker.TrackGlyphs">glyph tracking routine</see>.</para>
         /// </remarks>
-        /// 
         public Matrix4x4 TransformationMatrix
         {
             get { return transformationMatrix; }
@@ -185,9 +169,10 @@ namespace AForge.Vision.GlyphRecognition
         /// Check if glyph pose was estimated or not.
         /// </summary>
         /// 
-        /// <remarks><para>The property tells if <see cref="TransformationMatrix"/> property
-        /// was calculated for this glyph or not.</para></remarks>
-        ///
+        /// <remarks>
+        /// <para>The property tells if <see cref="TransformationMatrix"/> property
+        /// was calculated for this glyph or not.</para>
+        /// </remarks>
         public bool IsTransformationDetected
         {
             get { return isTransformationDetected; }
@@ -195,7 +180,7 @@ namespace AForge.Vision.GlyphRecognition
         }
 
         /// <summary>
-        /// 
+        /// Model radius.
         /// </summary>
         public float ModelRadius
         {
@@ -230,11 +215,10 @@ namespace AForge.Vision.GlyphRecognition
         /// <summary>
         /// Initializes a new instance of the <see cref="ExtractedGlyphData"/> class.
         /// </summary>
-        /// 
         /// <param name="quadrilateral">Quadrilateral of the raw glyph detected.</param>
-        /// <param name="rawData">Raw glyph data extacted from processed image.</param>
+        /// <param name="rawData">Raw glyph data extracted from processed image.</param>
         /// <param name="confidence">Confidence level of <paramref name="rawData"/> recognition.</param>
-        /// 
+        /// <param name="size">Size</param>
         public ExtractedGlyphData(List<IntPoint> quadrilateral, byte[,] rawData, float confidence, Size size)
         {
             this.Quadrilateral = quadrilateral;
@@ -289,9 +273,9 @@ namespace AForge.Vision.GlyphRecognition
         }
 
         /// <summary>
-        /// Calculate perimeter lenght by the array value.
+        /// Calculate perimeter length by the array value.
         /// </summary>
-        /// <returns>Perimeters lenght.</returns>
+        /// <returns>Perimeters length.</returns>
         public double Perimeter()
         {
             // Calculate the circumference with X(area).
@@ -324,9 +308,8 @@ namespace AForge.Vision.GlyphRecognition
         }
 
         /// <summary>
-        /// Estemate the 3D position of te glyph.
+        /// Estimate the 3D position of the glyph.
         /// </summary>
-        /// <param name="imageSize">Image size is more like size of the coordinate system.</param>
         /// <param name="useCoplanarPosit"></param>
         /// <param name="yaw"></param>
         /// <param name="pitch"></param>
@@ -397,13 +380,12 @@ namespace AForge.Vision.GlyphRecognition
         }
 
         /// <summary>
-        /// 
+        /// Perform projection calculation.
         /// </summary>
-        /// <param name="imageSize"></param>
-        /// <returns></returns>
+        /// <returns>Points of the projection.</returns>
         public AForge.Point[] PerformProjection()
         {
-            // Create the tranformation matrix.
+            // Create the transformation matrix.
             Matrix4x4 transformationMatrix =
                 Matrix4x4.CreateTranslation(this.translationVector) *       // 3: translate
                 Matrix4x4.CreateFromRotation(this.rotationMatrix) *         // 2: rotate
@@ -425,27 +407,6 @@ namespace AForge.Vision.GlyphRecognition
             }
 
             return projectedPoints;
-        }
-
-        #endregion
-
-        #region Private
-
-        private List<System.Drawing.Point> ConvertToPoint(List<IntPoint> points)
-        {
-            List<System.Drawing.Point> netPoints = new List<System.Drawing.Point>();
-
-            if (points == null)
-            {
-                throw new NullReferenceException("Points can not be null.");
-            }
-
-            foreach (IntPoint p in points)
-            {
-                netPoints.Add(new System.Drawing.Point(p.X, p.Y));
-            }
-
-            return netPoints;
         }
 
         #endregion
@@ -478,113 +439,5 @@ namespace AForge.Vision.GlyphRecognition
 
         #endregion
 
-        /// <summary>
-        /// Render the image and components.
-        /// </summary>
-        public void DrawContour(Graphics graphics)
-        {
-            lock (this.drawLock)
-            {
-                // If graphics is not instanced, return.
-                if (graphics == null)
-                {
-                    return;
-                }
-
-                Pen penTraj = new Pen(Color.Red, 3);
-
-                if (this.Quadrilateral.Count == 4)
-                {
-                    graphics.DrawPolygon(penTraj, this.ConvertToPoint(this.Quadrilateral).ToArray());
-                }
-            }
-        }
-
-        /// <summary>
-        /// Draw the centroid of the glyph.
-        /// </summary>
-        /// <param name="graphics"></param>
-        public void DrawCentroid(Graphics graphics)
-        {
-            lock (this.drawLock)
-            {
-                // If graphics is not instanced, return.
-                if (graphics == null)
-                {
-                    return;
-                }
-
-                Pen penTraj = new Pen(Color.Red, 3);
-
-                if (this.Quadrilateral.Count == 4)
-                {
-                    PointF c = this.Centroid();
-                    // Draw the center point.
-                    System.Drawing.Point p = System.Drawing.Point.Add(System.Drawing.Point.Ceiling(c), new Size(-4, -4));
-                    RectangleF centroidShape = new RectangleF(p, new Size(8, 8));
-                    graphics.DrawEllipse(penTraj, centroidShape);
-                }
-            }
-        }
-
-        public void DrawPoints(Graphics graphics)
-        {
-            // Load the points of the glph.
-            AForge.Point[] imPoints = new AForge.Point[4];
-            for (int index = 0; index < this.Quadrilateral.Count; index++)
-            {
-                float x = System.Math.Max(0, System.Math.Min(this.Quadrilateral[index].X, this.CoordinateSystemSize.Width - 1));
-                float y = System.Math.Max(0, System.Math.Min(this.Quadrilateral[index].Y, this.CoordinateSystemSize.Height - 1));
-
-                imPoints[index] = new AForge.Point(x - this.CoordinateSystemSize.Width / 2, this.CoordinateSystemSize.Height / 2 - y);
-            }
-
-            // Calculate the half width and heght.
-            int cx = this.CoordinateSystemSize.Width / 2;
-            int cy = this.CoordinateSystemSize.Height / 2;
-
-            // Draw corner points.
-            for (int i = 0; i < 4; i++)
-            {
-                using (Brush brush = new SolidBrush(pointsColors[i]))
-                {
-                    graphics.FillEllipse(brush, new Rectangle(
-                        (int)(cx + imPoints[i].X - 3),
-                        (int)(cy - imPoints[i].Y - 3),
-                        7, 7));
-                }
-            }
-        }
-
-        public void DrawCoordinates(Graphics graphics)
-        {
-            // Calculate the half width and heght.
-            int cx = this.CoordinateSystemSize.Width / 2;
-            int cy = this.CoordinateSystemSize.Height / 2;
-            int thicknes = 3;
-
-            AForge.Point[] projectedAxes = this.PerformProjection();
-
-            using (Pen pen = new Pen(Color.Blue, thicknes))
-            {
-                graphics.DrawLine(pen,
-                    cx + projectedAxes[0].X, cy - projectedAxes[0].Y,
-                    cx + projectedAxes[1].X, cy - projectedAxes[1].Y);
-            }
-
-            using (Pen pen = new Pen(Color.Red, thicknes))
-            {
-                graphics.DrawLine(pen,
-                    cx + projectedAxes[0].X, cy - projectedAxes[0].Y,
-                    cx + projectedAxes[2].X, cy - projectedAxes[2].Y);
-            }
-
-            using (Pen pen = new Pen(Color.Lime, thicknes))
-            {
-                graphics.DrawLine(pen,
-                    cx + projectedAxes[0].X, cy - projectedAxes[0].Y,
-                    cx + projectedAxes[3].X, cy - projectedAxes[3].Y);
-            }
-        }
     }
 }

@@ -10,10 +10,10 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-using AForge;
 using AForge.Imaging;
 using AForge.Imaging.Filters;
 using AForge.Math.Geometry;
+using AForge.Vision.GlyphRecognition.Data;
 
 namespace AForge.Vision.GlyphRecognition
 {
@@ -57,7 +57,7 @@ namespace AForge.Vision.GlyphRecognition
         private int maxNumberOfGlyphsToSearch = 3;
 
         /// <summary>
-        /// Mimimum confidance level for extracted raw glyph data.
+        /// Minimum confidence level for extracted raw glyph data.
         /// </summary>
         private float minConfidenceLevel = 0.60f;
 
@@ -68,7 +68,7 @@ namespace AForge.Vision.GlyphRecognition
 
         #endregion
 
-        #region Propertys
+        #region Properties
 
         /// <summary>
         /// Size of glyph to search and recognize, [5, 23].
@@ -122,7 +122,7 @@ namespace AForge.Vision.GlyphRecognition
         /// in the database.</para>
         /// 
         /// <para><note>If the property is set to <see langword="null"/>, the class will only do searching for glyphs - objects
-        /// which look like a glyph and satisfy certain constaints applicable to a valid glyph. In this case it will
+        /// which look like a glyph and satisfy certain constants applicable to a valid glyph. In this case it will
         /// provide information about all found glyphs - their position and raw data.</note></para>
         /// </remarks>
         /// 

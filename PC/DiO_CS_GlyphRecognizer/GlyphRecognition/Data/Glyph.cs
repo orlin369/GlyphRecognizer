@@ -1,20 +1,21 @@
-﻿// Gliph Recognition Library
+﻿using System;
+using System.Drawing;
+
+// Glyph Recognition Library
 // http://www.aforgenet.com/projects/gratf/
 //
 // Copyright © Andrew Kirillov, 2010
 // andrew.kirillov@aforgenet.com
 //
-
-namespace AForge.Vision.GlyphRecognition
+namespace AForge.Vision.GlyphRecognition.Data
 {
-    using System;
-    using System.Drawing;
 
     /// <summary>
     /// Square binary glyph.
     /// </summary>
     public class Glyph : ICloneable
     {
+
         #region Variables
 
         private string name;
@@ -23,7 +24,7 @@ namespace AForge.Vision.GlyphRecognition
 
         #endregion
 
-        #region Propertys
+        #region Properties
 
         /// <summary>
         /// Glyph's name.
@@ -35,7 +36,7 @@ namespace AForge.Vision.GlyphRecognition
         }
 
         /// <summary>
-        /// Glyph's size - length of <see cref="Data"/> array dimenstions.
+        /// Glyph's size - length of <see cref="Data"/> array dimensions.
         /// </summary>
         public int Size
         {
@@ -332,7 +333,7 @@ namespace AForge.Vision.GlyphRecognition
         /// <param name="rawGlyphData">Glyph data to check.</param>
         /// 
         /// <returns>Returns <see langword="true"/> if the specified glyph data contain
-        /// a value (elemenent equal to 1) in every inner row/column
+        /// a value (element equal to 1) in every inner row/column
         /// or <see langword="false"/> otherwise.</returns>
         /// 
         /// <remarks><para>The tool method is used to check if specified glyph data have at least
@@ -461,5 +462,6 @@ namespace AForge.Vision.GlyphRecognition
         }
 
         #endregion
+
     }
 }

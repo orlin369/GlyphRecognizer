@@ -12,35 +12,63 @@ using System.IO;
 using System.Xml;
 using System.Drawing;
 
-namespace AForge.Vision.GlyphRecognition
+namespace AForge.Vision.GlyphRecognition.Data
 {
+    /// <summary>
+    /// Graphics data base descriptor class.
+    /// </summary>
     public class GlyphDatabases
     {
-        private Dictionary<string, GlyphDatabase> dbs = new Dictionary<string, GlyphDatabase>( );
 
-        public GlyphDatabase this[string name]
-        {
-            get { return dbs[name]; }
-        }
+        #region Constants
 
-        #region XML Tag Names
         private const string databaseTag = "Database";
         private const string glyphTag = "Glyph";
-        private const string nameAttr = "name";
-        private const string sizeAttr = "size";
-        private const string dataAttr = "data";
-        private const string countAttr = "count";
-        private const string colorAttr = "color";
-        private const string iconAttr = "icon";
-        private const string modelAttr = "model";
+        private const string nameAttr = "Name";
+        private const string sizeAttr = "Size";
+        private const string dataAttr = "Data";
+        private const string countAttr = "Count";
+        private const string colorAttr = "Color";
+        private const string iconAttr = "Icon";
+        private const string modelAttr = "Model";
+
         #endregion
 
-        // Add glyph database to collection
-        public void AddGlyphDatabase( string name, GlyphDatabase db )
+        #region Variables
+
+        /// <summary>
+        /// Data container.
+        /// </summary>
+        private Dictionary<string, GlyphDatabase> container = new Dictionary<string, GlyphDatabase>( );
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Array indexer.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>Database</returns>
+        public GlyphDatabase this[string name]
         {
-            if ( !dbs.ContainsKey( name ) )
+            get { return container[name]; }
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Add glyph database to collection.
+        /// </summary>
+        /// <param name="name">Name</param>
+        /// <param name="db">Database.</param>
+        public void AddGlyphDatabase(string name, GlyphDatabase db)
+        {
+            if ( !container.ContainsKey( name ) )
             {
-                dbs.Add( name, db );
+                container.Add( name, db );
             }
             else
             {
@@ -48,47 +76,60 @@ namespace AForge.Vision.GlyphRecognition
             }
         }
 
-        // Remove glyph database from collection
-        public void RemoveGlyphDatabase( string name )
+        /// <summary>
+        /// Remove glyph database from collection.
+        /// </summary>
+        /// <param name="name">Name</param>
+        public void RemoveGlyphDatabase(string name)
         {
-            if ( dbs.ContainsKey( name ) )
+            if ( container.ContainsKey( name ) )
             {
-                dbs.Remove( name );
+                container.Remove( name );
             }
         }
 
-        // Rename glyph database
+        /// <summary>
+        /// Rename glyph database.
+        /// </summary>
+        /// <param name="oldName">Old name</param>
+        /// <param name="newName">New name</param>
         public void RenameGlyphDatabase( string oldName, string newName )
         {
             if ( oldName != newName )
             {
-                if ( dbs.ContainsKey( newName ) )
+                if ( container.ContainsKey( newName ) )
                 {
                     throw new ApplicationException( "A glyph database with such name already exists : " + newName );
                 }
 
-                if ( !dbs.ContainsKey( oldName ) )
+                if ( !container.ContainsKey( oldName ) )
                 {
                     throw new ApplicationException( "A glyph database with such name does not exist : " + oldName );
                 }
 
                 // insert it with new key
-                dbs.Add( newName, dbs[oldName] );
+                container.Add( newName, container[oldName] );
                 // remove it from dictonary with the old key
-                dbs.Remove( oldName );
+                container.Remove( oldName );
             }
         }
 
-        // Get list of available databases' names
+        /// <summary>
+        /// Get list of available databases' names.
+        /// </summary>
+        /// <returns>List of names.</returns>
         public List<string> GetDatabaseNames( )
         {
-            return new List<string>( dbs.Keys );
+            return new List<string>( container.Keys );
         }
 
-        // Save infromation about all databases and glyphs into XML writer
+        /// <summary>
+        /// Save infromation about all databases and glyphs into XML writer.
+        /// </summary>
+        /// <param name="xmlOut">XML writer.</param>
         public void Save( XmlTextWriter xmlOut )
         {
-            foreach ( KeyValuePair<string, GlyphDatabase> kvp in dbs )
+            foreach ( KeyValuePair<string, GlyphDatabase> kvp in container )
             {
                 xmlOut.WriteStartElement( databaseTag );
                 xmlOut.WriteAttributeString( nameAttr, kvp.Key );
@@ -122,7 +163,10 @@ namespace AForge.Vision.GlyphRecognition
             }
         }
 
-        // Load information about databases and glyphs from XML reader
+        /// <summary>
+        /// Load information about databases and glyphs from XML reader.
+        /// </summary>
+        /// <param name="xmlIn">XML Reader</param>
         public void Load( XmlTextReader xmlIn )
         {
             // read to the first node
@@ -183,6 +227,8 @@ namespace AForge.Vision.GlyphRecognition
             }
         }
 
+        #endregion
+
         #region Tool Methods
 
         private static string GlyphDataToString( byte[,] glyphData )
@@ -217,5 +263,6 @@ namespace AForge.Vision.GlyphRecognition
         }
 
         #endregion
+
     }
 }

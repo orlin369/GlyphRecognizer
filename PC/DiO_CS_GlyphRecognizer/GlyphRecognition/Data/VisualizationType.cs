@@ -5,12 +5,7 @@
 // andrew.kirillov@aforgenet.com
 //
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace AForge.Vision.GlyphRecognition
+namespace AForge.Vision.GlyphRecognition.Data
 {
     /// <summary>
     /// Enumeration of visualization types.

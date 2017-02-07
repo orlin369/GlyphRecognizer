@@ -1,32 +1,35 @@
-﻿// Gliph Recognition Library
+﻿// Glyph Recognition Library
 // http://www.aforgenet.com/projects/gratf/
 //
 // Copyright © Andrew Kirillov, 2010-2011
 // andrew.kirillov@aforgenet.com
 //
 
+using System.Collections.Generic;
+
+using AForge.Math;
+using AForge.Math.Geometry;
+using AForge.Imaging;
+using AForge.Vision.GlyphRecognition.Data;
+
 namespace AForge.Vision.GlyphRecognition
 {
-    using System;
-    using System.Collections.Generic;
-
-    using AForge.Math;
-    using AForge.Math.Geometry;
-    using AForge.Imaging;
-
+    
     /// <summary>
     /// Glyph tracker.
     /// </summary>
-    /// 
     /// <remarks><para>The purpose of this class is to perform tracking of glyphs, which are
     /// typically recognized by <see cref="GlyphRecognizer.FindGlyphs(UnmanagedImage)"/> routine or
     /// similar. The main purpose of this class is to provide 3D pose estimation of glyphs as well
     /// as provide glyphs' IDs, which could be used by user to perform glyphs' tracking in continuous
     /// video feed. See <see cref="TrackGlyphs"/> method for additional information.</para>
     /// </remarks>
-    /// 
     public class GlyphTracker
     {
+
+        #region Variables
+
+        //TODO: clear.
         private int counter = 1;
         private Dictionary<int, TrackedGlyph> trackedGlyphs = new Dictionary<int, TrackedGlyph>( );
         private Dictionary<int, Matrix3x3> prevRotation = new Dictionary<int, Matrix3x3>( );
@@ -47,6 +50,10 @@ namespace AForge.Vision.GlyphRecognition
         private float glyphSize = 0;
 
         private CoplanarPosit posit;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Size of the image containing glyphs.
@@ -115,10 +122,14 @@ namespace AForge.Vision.GlyphRecognition
             get { return glyphSize; }
             set
             {
-                glyphSize = Math.Max( 0, value );
+                glyphSize = System.Math.Max( 0, value );
                 CreatePosit( );
             }
         }
+
+        #endregion
+
+        #region Constructor
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GlyphTracker"/> class.
@@ -129,28 +140,9 @@ namespace AForge.Vision.GlyphRecognition
             CreatePosit( );        
         }
 
-        private void CreatePosit( )
-        {
-            if ( glyphSize != 0 )
-            {
-                // create glyph's model
-                float sizeHalf = glyphSize / 2;
+        #endregion
 
-                Vector3[] glyphModel = new Vector3[]
-                {
-                    new Vector3( -sizeHalf, 0,  sizeHalf ),
-                    new Vector3(  sizeHalf, 0,  sizeHalf ),
-                    new Vector3(  sizeHalf, 0, -sizeHalf ),
-                    new Vector3( -sizeHalf, 0, -sizeHalf ),
-                };
-
-                posit = new CoplanarPosit( glyphModel, cameraFocalLength );
-            }
-            else
-            {
-                posit = null;
-            }
-        }
+        #region Public Methods
 
         /// <summary>
         /// Track glyphs in continuous video feed.
@@ -179,7 +171,7 @@ namespace AForge.Vision.GlyphRecognition
         /// or does not move smoothly.</para>
         /// </remarks>
         /// 
-        public List<int> TrackGlyphs( List<ExtractedGlyphData> glyphs )
+        public List<int> TrackGlyphs(List<ExtractedGlyphData> glyphs)
         {
             // process previously tracked glyphs
             IncreaseHistoryAge( );
@@ -202,11 +194,56 @@ namespace AForge.Vision.GlyphRecognition
             return glyphIDs;
         }
 
+        /// <summary>
+        /// Reset internal state of the tracker.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The method resets all internal variables of the tracker to the
+        /// initial state so it is ready to be used on different video feed.
+        /// </para>
+        /// </remarks>
+        public void Reset()
+        {
+            trackedGlyphs.Clear();
+            prevRotation.Clear();
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Create posit.
+        /// </summary>
+        private void CreatePosit()
+        {
+            if (glyphSize != 0)
+            {
+                // create glyph's model
+                float sizeHalf = glyphSize / 2;
+
+                Vector3[] glyphModel = new Vector3[]
+                {
+                    new Vector3( -sizeHalf, 0,  sizeHalf ),
+                    new Vector3(  sizeHalf, 0,  sizeHalf ),
+                    new Vector3(  sizeHalf, 0, -sizeHalf ),
+                    new Vector3( -sizeHalf, 0, -sizeHalf ),
+                };
+
+                posit = new CoplanarPosit(glyphModel, cameraFocalLength);
+            }
+            else
+            {
+                posit = null;
+            }
+        }
+
         // Get ID of the specified glyph
         // Note (todo?): glyph tracking needs to be improved since current implementation
         // is not reliable enough for the case when several glyphs of the same type are
         // found and those do not move smoothely.
-        private int GetGlyphID( ExtractedGlyphData glyph )
+        private int GetGlyphID(ExtractedGlyphData glyph)
         {
             int glyphID = -1;
 
@@ -292,40 +329,11 @@ namespace AForge.Vision.GlyphRecognition
         }
 
         /// <summary>
-        /// Reset internal state of the tracker.
+        /// Estimate pose for of the given glyph
         /// </summary>
-        /// 
-        /// <remarks><para>The method resets all internal variables of the tracker to the
-        /// initial state so it is ready to be used on different video feed.</para></remarks>
-        /// 
-        public void Reset( )
-        {
-            trackedGlyphs.Clear( );
-            prevRotation.Clear( );
-        }
-
-        // Check if difference between glyphs corners' coordinates is significant (more
-        // than caused by noise)
-        private static bool IsCoordinatesDifferenceSignificant( List<IntPoint> points1, List<IntPoint> points2 )
-        {
-            int significantDifferences = 0;
-
-            for ( int i = 0, n = points1.Count; i < n; i++ )
-            {
-                if ( ( System.Math.Abs( points1[i].X - points2[i].X ) > MaxGlyphShaking ) ||
-                     ( System.Math.Abs( points1[i].Y - points2[i].Y ) > MaxGlyphShaking ) )
-                {
-                    significantDifferences++;
-                }
-            }
-
-            // if glyph starts moving/rotating, then at least two corners should change position.
-            // if only one changes, then it is caused by noise most probably
-            return ( significantDifferences > 1 );
-        }
-
-        // Estimate pose for of the given glyph
-        private void EstimateGlyphPose( ExtractedGlyphData glyph, int glyphID )
+        /// <param name="eGlyphData">Extracted glyph data.</param>
+        /// <param name="glyphID">Glyph ID.</param>
+        private void EstimateGlyphPose(ExtractedGlyphData eGlyphData, int glyphID)
         {
             int imageCenterX = imageSize.Width >> 1;
             int imageCenterY = imageSize.Height >> 1;
@@ -338,16 +346,16 @@ namespace AForge.Vision.GlyphRecognition
             for ( int i = 0; i < 4; i++ )
             {
                 glyphPoints[i] = new Point(
-                    glyph.RecognizedQuadrilateral[i].X - imageCenterX,
-                    imageCenterY - glyph.RecognizedQuadrilateral[i].Y );
+                    eGlyphData.RecognizedQuadrilateral[i].X - imageCenterX,
+                    imageCenterY - eGlyphData.RecognizedQuadrilateral[i].Y );
             }
 
             // estimate pose using Coplanar POSIT algorithm
             posit.EstimatePose( glyphPoints, out rotation, out translation );
 
-            glyph.TransformationMatrix = Matrix4x4.CreateTranslation( translation ) *
+            eGlyphData.TransformationMatrix = Matrix4x4.CreateTranslation( translation ) *
                                          Matrix4x4.CreateFromRotation( rotation );
-            glyph.IsTransformationDetected = true;
+            eGlyphData.IsTransformationDetected = true;
 
             // check if we have previous rotation of the glyph
             if ( !prevRotation.ContainsKey( glyphID ) )
@@ -373,7 +381,7 @@ namespace AForge.Vision.GlyphRecognition
 
                     if ( e1 > e2 )
                     {
-                        glyph.TransformationMatrix =
+                        eGlyphData.TransformationMatrix =
                             Matrix4x4.CreateTranslation( posit.AlternateEstimatedTranslation ) *
                             Matrix4x4.CreateFromRotation( posit.AlternateEstimatedRotation );
 
@@ -385,8 +393,10 @@ namespace AForge.Vision.GlyphRecognition
             }
         }
 
-        // Increase age of tracked glyph and remove old ones
-        private void IncreaseHistoryAge( )
+        /// <summary>
+        /// Increase age of tracked glyph and remove old ones.
+        /// </summary>
+        private void IncreaseHistoryAge()
         {
             List<int> keys = new List<int>( trackedGlyphs.Keys );
 
@@ -410,50 +420,35 @@ namespace AForge.Vision.GlyphRecognition
             }
         }
 
-        // Information about the the tracked glyph
-        private class TrackedGlyph
+        #endregion
+
+        #region Private Static Methods
+
+        /// <summary>
+        /// Check if difference between glyphs corners' coordinates is significant (more than caused by noise)
+        /// </summary>
+        /// <param name="points1">Glyph points 1.</param>
+        /// <param name="points2">Glyph points 2.</param>
+        /// <returns></returns>
+        private static bool IsCoordinatesDifferenceSignificant(List<IntPoint> points1, List<IntPoint> points2)
         {
-            private const int MaxMotionHistoryLength = 11;
-            private const int RecentStepsCount = 10;
+            int significantDifferences = 0;
 
-            public readonly int ID;
-
-            public ExtractedGlyphData Glyph;
-            public int Age = 0;
-            public Point Position;
-
-            private readonly List<Point> motionHistory = new List<Point>( );
-            public double RecentPathLength = 0;
-            public double AverageRecentMotion = 0;
-
-            public TrackedGlyph( int id, ExtractedGlyphData glyph, Point position )
+            for (int i = 0, n = points1.Count; i < n; i++)
             {
-                ID = id;
-                Glyph = glyph;
-                Position = position;
+                if ((System.Math.Abs(points1[i].X - points2[i].X) > MaxGlyphShaking) ||
+                     (System.Math.Abs(points1[i].Y - points2[i].Y) > MaxGlyphShaking))
+                {
+                    significantDifferences++;
+                }
             }
 
-            public void AddMotionHistory( Point position )
-            {
-                motionHistory.Add( position );
-
-                if ( motionHistory.Count > MaxMotionHistoryLength )
-                {
-                    motionHistory.RemoveAt( 0 );
-                }
-
-                // calculate amount of recent movement
-                RecentPathLength = 0;
-                int stepsCount = Math.Min( RecentStepsCount, motionHistory.Count - 1 );
-                int historyLimit = MaxMotionHistoryLength - stepsCount;
-
-                for ( int i = motionHistory.Count - 1; i >= historyLimit; i-- )
-                {
-                    RecentPathLength += motionHistory[i].DistanceTo( motionHistory[i - 1] );
-                }
-
-                AverageRecentMotion = ( stepsCount == 0 ) ? 0 : RecentPathLength / stepsCount;
-            }
+            // if glyph starts moving/rotating, then at least two corners should change position.
+            // if only one changes, then it is caused by noise most probably
+            return (significantDifferences > 1);
         }
+
+        #endregion
+
     }
 }

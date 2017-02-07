@@ -95,21 +95,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExtractedGlyphData.cs" />
-    <Compile Include="Glyph.cs" />
-    <Compile Include="GlyphDatabase.cs" />
-    <Compile Include="GlyphDatabases.cs" />
-    <Compile Include="GlyphImageProcessor.cs" />
+    <Compile Include="Data\ExtractedGlyphData.cs" />
+    <Compile Include="Data\Glyph.cs" />
+    <Compile Include="Data\GlyphDatabase.cs" />
+    <Compile Include="Data\GlyphDatabases.cs" />
     <Compile Include="GlyphRecognizer.cs" />
     <Compile Include="GlyphTracker.cs" />
-    <Compile Include="GlyphVisualizationData.cs" />
+    <Compile Include="Data\GlyphVisualizationData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SquareBinaryGlyphRecognizer.cs" />
-    <Compile Include="VisualizationType.cs" />
+    <Compile Include="Data\VisualizationType.cs" />
+    <Compile Include="TrackedGlyph.cs" />
+    <Compile Include="Utils\GlyphDrawer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
