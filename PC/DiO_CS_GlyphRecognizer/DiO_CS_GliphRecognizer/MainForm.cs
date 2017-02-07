@@ -1,14 +1,39 @@
-﻿using AForge;
+﻿/*
+
+Copyright (c) [2016] [Orlin Dimitrov]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Windows.Forms;
+
 using AForge.Imaging.Filters;
 using AForge.Video;
 using AForge.Video.DirectShow;
 using AForge.Vision.GlyphRecognition;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Windows.Forms;
+using AForge.Vision.GlyphRecognition.Data;
+using AForge.Vision.GlyphRecognition.Utils;
 
 namespace DiO_CS_GliphRecognizer
 {
@@ -28,7 +53,7 @@ namespace DiO_CS_GliphRecognizer
         private GlyphRecognizer recognizer;
 
         /// <summary>
-        /// Recogniesed database.
+        /// Recognized database.
         /// </summary>
         private List<ExtractedGlyphData> recognisedGlyphs;
 
@@ -43,7 +68,7 @@ namespace DiO_CS_GliphRecognizer
         private Bitmap capturedImage;
 
         /// <summary>
-        /// Sync objec.
+        /// Sync object.
         /// </summary>
         private object syncLock;
 
@@ -75,7 +100,7 @@ namespace DiO_CS_GliphRecognizer
 
         #endregion
 
-        #region Construcotr
+        #region Constructor
 
         /// <summary>
         /// Constructor
@@ -137,7 +162,7 @@ namespace DiO_CS_GliphRecognizer
         }
 
         /// <summary>
-        /// Refresh the list displaying available databases of glyphss
+        /// Refresh the list displaying available databases of glyphs.
         /// </summary>
         private void LoadGlyphDatabases5()
         {
@@ -204,7 +229,7 @@ namespace DiO_CS_GliphRecognizer
         }
 
         /// <summary>
-        /// Refresh the list displaying available databases of glyphss
+        /// Refresh the list displaying available databases of glyphs
         /// </summary>
         private void LoadGlyphDatabases12()
         {
@@ -290,7 +315,7 @@ namespace DiO_CS_GliphRecognizer
         }
 
         /// <summary>
-        /// Display mage.
+        /// Display image.
         /// </summary>
         /// <param name="image"></param>
         private void DisplayGlyphs(Bitmap image, List<ExtractedGlyphData> glyphs)
@@ -305,13 +330,13 @@ namespace DiO_CS_GliphRecognizer
                         //e.Graphics.Clear(Color.White);
                         if (this.capturedImage != null)
                         {
-                            foreach (ExtractedGlyphData glyph in glyphs)
+                            foreach (ExtractedGlyphData egd in glyphs)
                             {
-                                //egd.DrawCentroid(e.Graphics);
-                                glyph.DrawContour(g);
-                                glyph.DrawPoints(g);
-                                glyph.DrawCoordinates(g);
-                                
+                                //GlyphDrawer.DrawCentroid(e.Graphics);
+                                GlyphDrawer.DrawContour(egd, g);
+                                GlyphDrawer.DrawPoints(egd, g);
+                                GlyphDrawer.DrawCoordinates(egd, g);
+
                                 //Console.WriteLine("{0}", egd.RecognizedGlyph.Name);
                             }
                         }            
@@ -332,9 +357,9 @@ namespace DiO_CS_GliphRecognizer
                         foreach (ExtractedGlyphData egd in this.recognisedGlyphs)
                         {
                             //egd.DrawCentroid(e.Graphics);
-                            egd.DrawContour(g);
-                            egd.DrawPoints(g);
-                            egd.DrawCoordinates(g);
+                            GlyphDrawer.DrawContour(egd, g);
+                            GlyphDrawer.DrawPoints(egd, g);
+                            GlyphDrawer.DrawCoordinates(egd, g);
                             //Console.WriteLine("{0}", egd.RecognizedGlyph.Name);
                         }
                     }
@@ -376,7 +401,7 @@ namespace DiO_CS_GliphRecognizer
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            // Stop and free the webcam object if application is closing.
+            // Stop and free the web cam object if application is closing.
             if (this.videoSource != null && this.videoSource.IsRunning)
             {
                 // Signal to stop when you no longer need capturing.
@@ -390,7 +415,7 @@ namespace DiO_CS_GliphRecognizer
 
         #endregion
 
-        #region Frame Graber
+        #region Frame Grabber
 
         private void video_NewFrame(object sender, NewFrameEventArgs eventArgs)
         {
@@ -404,13 +429,13 @@ namespace DiO_CS_GliphRecognizer
                 // Clone the content.
                 this.capturedImage = (Bitmap)eventArgs.Frame.Clone();
 
-                // Exif there is a problem with data cloning.
+                // Exit there is a problem with data cloning.
                 if (this.capturedImage == null)
                 {
                     return;
                 }
 
-                // Convert image to RGB if it is grayscale.
+                // Convert image to RGB if it is gray scale.
                 if (this.capturedImage.PixelFormat == PixelFormat.Format8bppIndexed)
                 {
                     GrayscaleToRGB filter = new GrayscaleToRGB();
@@ -422,7 +447,7 @@ namespace DiO_CS_GliphRecognizer
                 //TODO: Make preprocessing hear if it is needed.
 
 
-                // Create tmp buffer.
+                // Create temp buffer.
                 List<ExtractedGlyphData> tmpGlyps = recognizer.FindGlyphs(this.capturedImage);
                 // Rewrite the glyph buffer.
                 this.recognisedGlyphs = tmpGlyps;
