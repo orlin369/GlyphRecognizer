@@ -116,7 +116,6 @@
             <summary>
             Check if glyph pose was estimated or not.
             </summary>
-            
             <remarks>
             <para>The property tells if <see cref="P:AForge.Vision.GlyphRecognition.Data.ExtractedGlyphData.TransformationMatrix"/> property
             was calculated for this glyph or not.</para>
@@ -130,11 +129,6 @@
         <member name="P:AForge.Vision.GlyphRecognition.Data.ExtractedGlyphData.CoordinateSystemSize">
             <summary>
             Coordinate system size.
-            </summary>
-        </member>
-        <member name="M:AForge.Vision.GlyphRecognition.Data.ExtractedGlyphData.#ctor">
-            <summary>
-            Constructor
             </summary>
         </member>
         <member name="M:AForge.Vision.GlyphRecognition.Data.ExtractedGlyphData.#ctor(System.Collections.Generic.List{AForge.IntPoint},System.Byte[0:,0:],System.Single,System.Drawing.Size)">
@@ -183,13 +177,16 @@
             <summary>
             Clone the object by making its exact copy.
             </summary>
-            
             <returns>Returns clone of the object.</returns>
-            
         </member>
         <member name="T:AForge.Vision.GlyphRecognition.Data.Glyph">
             <summary>
             Square binary glyph.
+            </summary>
+        </member>
+        <member name="F:AForge.Vision.GlyphRecognition.Data.Glyph.data">
+            <summary>
+            Data byte array.
             </summary>
         </member>
         <member name="P:AForge.Vision.GlyphRecognition.Data.Glyph.Name">
@@ -226,6 +223,11 @@
             parameters for example.</para></remarks>
             
         </member>
+        <member name="M:AForge.Vision.GlyphRecognition.Data.Glyph.#ctor">
+            <summary>
+            Empty constructor for he serialization.
+            </summary>
+        </member>
         <member name="M:AForge.Vision.GlyphRecognition.Data.Glyph.#ctor(System.String,System.Int32)">
             <summary>
             Initializes a new instance of the <see cref="T:AForge.Vision.GlyphRecognition.Data.Glyph"/> class.
@@ -245,17 +247,6 @@
             
             <param name="name">Glyph's name.</param>
             <param name="data">Glyph's data array (see <see cref="P:AForge.Vision.GlyphRecognition.Data.Glyph.Data"/>).</param>
-            
-        </member>
-        <member name="M:AForge.Vision.GlyphRecognition.Data.Glyph.Clone">
-            <summary>
-            Clone the glyph.
-            </summary>
-            
-            <returns>Returns clone of the glyph.</returns>
-            
-            <remarks><para><note>It is user's responsibility to clone <see cref="P:AForge.Vision.GlyphRecognition.Data.Glyph.UserData"/> property if it is
-            set to reference type object.</note></para></remarks>
             
         </member>
         <member name="M:AForge.Vision.GlyphRecognition.Data.Glyph.CheckForMatching(System.Byte[0:,0:])">
@@ -358,6 +349,17 @@
             <param name="size">Size of the square.</param>
             <returns>Rendered image.</returns>
         </member>
+        <member name="M:AForge.Vision.GlyphRecognition.Data.Glyph.Clone">
+            <summary>
+            Clone the glyph.
+            </summary>
+            <returns>
+            Returns clone of the glyph.
+            </returns>
+            <remarks><para><note>It is user's responsibility to clone <see cref="P:AForge.Vision.GlyphRecognition.Data.Glyph.UserData"/> property if it is
+            set to reference type object.</note></para>
+            </remarks>
+        </member>
         <member name="T:AForge.Vision.GlyphRecognition.Data.GlyphDatabase">
             <summary>
             Glyphs' database.
@@ -368,6 +370,16 @@
         <member name="F:AForge.Vision.GlyphRecognition.Data.GlyphDatabase.container">
             <summary>
             Glyphs.
+            </summary>
+        </member>
+        <member name="F:AForge.Vision.GlyphRecognition.Data.GlyphDatabase.size">
+            <summary>
+            Size
+            </summary>
+        </member>
+        <member name="M:AForge.Vision.GlyphRecognition.Data.GlyphDatabase.#ctor">
+            <summary>
+            Empty constructor.
             </summary>
         </member>
         <member name="M:AForge.Vision.GlyphRecognition.Data.GlyphDatabase.#ctor(System.Int32)">
@@ -495,6 +507,11 @@
             <param name="name"></param>
             <returns>Database</returns>
         </member>
+        <member name="M:AForge.Vision.GlyphRecognition.Data.GlyphDatabases.#ctor">
+            <summary>
+            Constructor
+            </summary>
+        </member>
         <member name="M:AForge.Vision.GlyphRecognition.Data.GlyphDatabases.AddGlyphDatabase(System.String,AForge.Vision.GlyphRecognition.Data.GlyphDatabase)">
             <summary>
             Add glyph database to collection.
@@ -523,7 +540,7 @@
         </member>
         <member name="M:AForge.Vision.GlyphRecognition.Data.GlyphDatabases.Save(System.Xml.XmlTextWriter)">
             <summary>
-            Save infromation about all databases and glyphs into XML writer.
+            Save information about all databases and glyphs into XML writer.
             </summary>
             <param name="xmlOut">XML writer.</param>
         </member>

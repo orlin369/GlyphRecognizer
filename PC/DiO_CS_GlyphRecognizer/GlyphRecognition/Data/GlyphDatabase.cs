@@ -18,6 +18,7 @@ namespace AForge.Vision.GlyphRecognition.Data
     /// </summary>
     /// <remarks><para>The class represents collection of glyphs, which cab be recognized with the help of
     /// <see cref="GlyphRecognizer"/>.</para></remarks>
+    [Serializable]
     public class GlyphDatabase : IEnumerable<Glyph>
     {
 
@@ -28,11 +29,22 @@ namespace AForge.Vision.GlyphRecognition.Data
         /// </summary>
         private Dictionary<string, Glyph> container = new Dictionary<string, Glyph>();
 
+        /// <summary>
+        /// Size
+        /// </summary>
         private int size;
 
         #endregion
 
         #region Constructor
+
+        /// <summary>
+        /// Empty constructor.
+        /// </summary>
+        public GlyphDatabase()
+        {
+
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GlyphDatabase"/> class.

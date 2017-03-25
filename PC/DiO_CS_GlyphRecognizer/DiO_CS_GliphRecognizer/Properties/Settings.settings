@@ -1,7 +1,21 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)">
-  <Profiles>
-    <Profile Name="(Default)" />
-  </Profiles>
-  <Settings />
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="DiO_CS_GliphRecognizer.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="BrokerHost" Type="System.String" Scope="User">
+      <Value Profile="(Default)">iot.eclipse.com</Value>
+    </Setting>
+    <Setting Name="BrokerPort" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1883</Value>
+    </Setting>
+    <Setting Name="MqttInputTopic" Type="System.String" Scope="User">
+      <Value Profile="(Default)">pt/str/i/vision/1</Value>
+    </Setting>
+    <Setting Name="MqttOutputTopic" Type="System.String" Scope="User">
+      <Value Profile="(Default)">pt/str/o/vision/1</Value>
+    </Setting>
+    <Setting Name="LastDatabasePath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+  </Settings>
 </SettingsFile>

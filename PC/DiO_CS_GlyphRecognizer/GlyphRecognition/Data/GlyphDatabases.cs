@@ -8,7 +8,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.IO;
 using System.Xml;
 using System.Drawing;
 
@@ -17,6 +16,7 @@ namespace AForge.Vision.GlyphRecognition.Data
     /// <summary>
     /// Graphics data base descriptor class.
     /// </summary>
+    [Serializable]
     public class GlyphDatabases
     {
 
@@ -53,6 +53,18 @@ namespace AForge.Vision.GlyphRecognition.Data
         public GlyphDatabase this[string name]
         {
             get { return container[name]; }
+        }
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public GlyphDatabases()
+        {
+
         }
 
         #endregion
@@ -124,11 +136,14 @@ namespace AForge.Vision.GlyphRecognition.Data
         }
 
         /// <summary>
-        /// Save infromation about all databases and glyphs into XML writer.
+        /// Save information about all databases and glyphs into XML writer.
         /// </summary>
         /// <param name="xmlOut">XML writer.</param>
         public void Save( XmlTextWriter xmlOut )
         {
+            //XmlDocument doc = new XmlDocument();
+            //XmlNode docNode = doc.CreateXmlDeclaration("1.0", "UTF-8", null);
+            
             foreach ( KeyValuePair<string, GlyphDatabase> kvp in container )
             {
                 xmlOut.WriteStartElement( databaseTag );
@@ -136,7 +151,7 @@ namespace AForge.Vision.GlyphRecognition.Data
                 xmlOut.WriteAttributeString( sizeAttr, kvp.Value.Size.ToString( ) );
                 xmlOut.WriteAttributeString( countAttr, kvp.Value.Count.ToString( ) );
 
-                // save glyps
+                // save glyph
                 foreach ( Glyph glyph in kvp.Value )
                 {
                     xmlOut.WriteStartElement( glyphTag );
@@ -161,6 +176,10 @@ namespace AForge.Vision.GlyphRecognition.Data
 
                 xmlOut.WriteEndElement( );
             }
+
+
+
+
         }
 
         /// <summary>

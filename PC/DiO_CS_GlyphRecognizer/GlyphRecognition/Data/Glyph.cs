@@ -13,14 +13,16 @@ namespace AForge.Vision.GlyphRecognition.Data
     /// <summary>
     /// Square binary glyph.
     /// </summary>
+    [Serializable]
     public class Glyph : ICloneable
     {
 
         #region Variables
-
-        private string name;
+        
+        /// <summary>
+        /// Data byte array.
+        /// </summary>
         private byte[,] data;
-        private object userData;
 
         #endregion
 
@@ -29,18 +31,17 @@ namespace AForge.Vision.GlyphRecognition.Data
         /// <summary>
         /// Glyph's name.
         /// </summary>
-        public string Name
-        {
-            get { return name; }
-            set { name = value; }
-        }
+        public string Name { get; set; }
 
         /// <summary>
         /// Glyph's size - length of <see cref="Data"/> array dimensions.
         /// </summary>
         public int Size
         {
-            get { return data.GetLength( 0 ); }
+            get
+            {
+                return data.GetLength( 0 );
+            }
         }
 
         /// <summary>
@@ -58,7 +59,10 @@ namespace AForge.Vision.GlyphRecognition.Data
         /// 
         public byte[,] Data
         {
-            get { return data; }
+            get
+            {
+                return data;
+            }
             set
             {
                 if ( value == null )
@@ -82,15 +86,19 @@ namespace AForge.Vision.GlyphRecognition.Data
         /// <remarks><para>The property allows to associate any user data with the glyph, like glyph's visualization
         /// parameters for example.</para></remarks>
         /// 
-        public object UserData
-        {
-            get { return userData; }
-            set { userData = value; }
-        }
+        public object UserData { get; set; }
 
         #endregion
 
         #region Constructor
+
+        /// <summary>
+        /// Empty constructor for he serialization.
+        /// </summary>
+        public Glyph()
+        {
+
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Glyph"/> class.
@@ -104,7 +112,7 @@ namespace AForge.Vision.GlyphRecognition.Data
         /// 
         public Glyph( string name, int size )
         {
-            this.name = name;
+            this.Name = name;
             this.data = new byte[size, size];
         }
 
@@ -117,31 +125,13 @@ namespace AForge.Vision.GlyphRecognition.Data
         /// 
         public Glyph( string name, byte[,] data )
         {
-            Name = name;
-            Data = data;
+            this.Name = name;
+            this.Data = data;
         }
 
         #endregion
 
         #region Public
-
-        /// <summary>
-        /// Clone the glyph.
-        /// </summary>
-        /// 
-        /// <returns>Returns clone of the glyph.</returns>
-        /// 
-        /// <remarks><para><note>It is user's responsibility to clone <see cref="UserData"/> property if it is
-        /// set to reference type object.</note></para></remarks>
-        /// 
-        public object Clone( )
-        {
-            Glyph clone = new Glyph( name, (byte[,]) data.Clone( ) );
-
-            clone.userData = userData;
-
-            return clone;
-        }
 
         /// <summary>
         /// Check for matching between the glyph and specified raw glyph data.
@@ -459,6 +449,28 @@ namespace AForge.Vision.GlyphRecognition.Data
             }
 
             return bitmap;
+        }
+
+        #endregion
+
+        #region IClonable implementation
+
+        /// <summary>
+        /// Clone the glyph.
+        /// </summary>
+        /// <returns>
+        /// Returns clone of the glyph.
+        /// </returns>
+        /// <remarks><para><note>It is user's responsibility to clone <see cref="UserData"/> property if it is
+        /// set to reference type object.</note></para>
+        /// </remarks>
+        public object Clone()
+        {
+            Glyph clone = new Glyph(Name, (byte[,])data.Clone());
+
+            clone.UserData = UserData;
+
+            return clone;
         }
 
         #endregion

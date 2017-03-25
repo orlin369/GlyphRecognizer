@@ -26,12 +26,12 @@ namespace AForge.Vision.GlyphRecognition.Data
         /// Quadrilateral of the raw glyph detected (see <see cref="RawData"/>). First point
         /// of this quadrilateral corresponds to upper-left point of the raw glyph data.
         /// </summary>
-        public readonly List<IntPoint> Quadrilateral;
+        public readonly List<IntPoint> Quadrilateral = new List<IntPoint>();
 
         /// <summary>
         /// Raw glyph data extracted from processed image.
         /// </summary>
-        public readonly byte[,] RawData;
+        public readonly byte[,] RawData = null;
 
         /// <summary>
         /// Confidence level of <see cref="RawData"/> recognition, [0.5, 0.1].
@@ -42,16 +42,8 @@ namespace AForge.Vision.GlyphRecognition.Data
         /// (and <see cref="SquareBinaryGlyphRecognizer"/>) is 100% sure about the glyph data found.
         /// But if it getting closer to 0.5, then recognizer is uncertain about one or more values of the
         /// raw glyph's data, which affect uncertainty level of the entire glyph.</para></remarks>
-        public readonly float Confidence;
-
-        private Glyph recognizedGlyph;
-
-        private List<IntPoint> recognizedQuadrilateral;
-
-        private Matrix4x4 transformationMatrix;
-
-        private bool isTransformationDetected = false;
-
+        public readonly float Confidence = 0.0f;
+        
         #region Estimation
 
         /// <summary>
@@ -126,11 +118,7 @@ namespace AForge.Vision.GlyphRecognition.Data
         /// in the specified glyphs' database (see <see cref="GlyphRecognizer.GlyphDatabase"/>. If a match is found
         /// then this property is set to the matching glyph. Otherwise it is set to <see langword="null"/>.
         /// </para></remarks>
-        public Glyph RecognizedGlyph
-        {
-            get { return recognizedGlyph; }
-            internal set { recognizedGlyph = value; }
-        }
+        public Glyph RecognizedGlyph { get; set; }
 
         /// <summary>
         /// Quadrilateral area corresponding to the <see cref="RecognizedGlyph"/>.
@@ -146,11 +134,7 @@ namespace AForge.Vision.GlyphRecognition.Data
         /// <para>This property is always set together with <see cref="RecognizedGlyph"/> on successful glyph matching. Otherwise
         /// it is set to <see langword="null"/>.</para>
         /// </remarks>
-        public List<IntPoint> RecognizedQuadrilateral
-        {
-            get { return recognizedQuadrilateral; }
-            internal set { recognizedQuadrilateral = value; }
-        }
+        public List<IntPoint> RecognizedQuadrilateral { get; set; }
 
         /// <summary>
         /// Glyphs transformation matrix.
@@ -159,58 +143,32 @@ namespace AForge.Vision.GlyphRecognition.Data
         /// <remarks><para>The property provides real world glyph's transformation, which is
         /// estimated by <see cref="GlyphTracker.TrackGlyphs">glyph tracking routine</see>.</para>
         /// </remarks>
-        public Matrix4x4 TransformationMatrix
-        {
-            get { return transformationMatrix; }
-            internal set { transformationMatrix = value; }
-        }
+        public Matrix4x4 TransformationMatrix { get; set; }
 
         /// <summary>
         /// Check if glyph pose was estimated or not.
         /// </summary>
-        /// 
         /// <remarks>
         /// <para>The property tells if <see cref="TransformationMatrix"/> property
         /// was calculated for this glyph or not.</para>
         /// </remarks>
-        public bool IsTransformationDetected
-        {
-            get { return isTransformationDetected; }
-            internal set { isTransformationDetected = value; }
-        }
+        public bool IsTransformationDetected { get; set; }
 
         /// <summary>
         /// Model radius.
         /// </summary>
-        public float ModelRadius
-        {
-            private set;
-            get;
-        }
+        public float ModelRadius { private set; get; }
 
         /// <summary>
         /// Coordinate system size.
         /// </summary>
-        public Size CoordinateSystemSize
-        {
-            private set;
-            get;
-        }
+        public Size CoordinateSystemSize { private set; get; }
 
+
+        
         #endregion
 
         #region Constructor
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public ExtractedGlyphData()
-        {
-            this.Quadrilateral = new List<IntPoint>();
-            this.RawData = null;
-            this.Confidence = 0.0f;
-            this.CoordinateSystemSize = new Size();
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExtractedGlyphData"/> class.
@@ -286,7 +244,7 @@ namespace AForge.Vision.GlyphRecognition.Data
         /// Calculate the contour area.
         /// </summary>
         /// <returns>Contour polygon area.</returns>
-        public float Area()
+        public double Area()
         {
             // Add the first point at the end of the array.
             int num_points = this.Quadrilateral.Count;
@@ -295,16 +253,19 @@ namespace AForge.Vision.GlyphRecognition.Data
             points[num_points] = this.Quadrilateral[0];
 
             // Get the areas.
-            float area = 0;
-            for (int i = 0; i < num_points; i++)
+            int i, j;
+            double area = 0;
+
+            for (i = 0; i < points.Length; i++)
             {
-                area +=
-                    (points[i + 1].X - points[i].X) *
-                    (points[i + 1].Y + points[i].Y) / 2;
+                j = (i + 1) % points.Length;
+
+                area += points[i].X * points[j].Y;
+                area -= points[i].Y * points[j].X;
             }
 
-            // Return the result.
-            return area;
+            area /= 2;
+            return (area < 0 ? -area : area);
         }
 
         /// <summary>
@@ -416,27 +377,16 @@ namespace AForge.Vision.GlyphRecognition.Data
         /// <summary>
         /// Clone the object by making its exact copy.
         /// </summary>
-        /// 
         /// <returns>Returns clone of the object.</returns>
-        /// 
         public object Clone()
         {
-            ExtractedGlyphData clone = new ExtractedGlyphData(
-                new List<IntPoint>(Quadrilateral), (byte[,])RawData.Clone(), Confidence, this.CoordinateSystemSize);
-
-            if (recognizedGlyph != null)
-            {
-                clone.RecognizedGlyph = (Glyph)recognizedGlyph.Clone();
-            }
-            if (recognizedQuadrilateral != null)
-            {
-                clone.RecognizedQuadrilateral = new List<IntPoint>(recognizedQuadrilateral);
-            }
-
-            return clone;
+            return new ExtractedGlyphData(
+                new List<IntPoint>(Quadrilateral),
+                (byte[,])this.RawData.Clone(),
+                this.Confidence,
+                this.CoordinateSystemSize);
         }
-
-
+        
         #endregion
 
     }

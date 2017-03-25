@@ -27,6 +27,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
+using System.Xml;
+using System.Text;
 
 using AForge.Imaging.Filters;
 using AForge.Video;
@@ -34,6 +36,11 @@ using AForge.Video.DirectShow;
 using AForge.Vision.GlyphRecognition;
 using AForge.Vision.GlyphRecognition.Data;
 using AForge.Vision.GlyphRecognition.Utils;
+
+using DiO_CS_GliphRecognizer.SettingsForms;
+using DiO_CS_GliphRecognizer.Connectors;
+using DiO_CS_GliphRecognizer.Adapters;
+using DiO_CS_GliphRecognizer.Data;
 
 namespace DiO_CS_GliphRecognizer
 {
@@ -45,7 +52,7 @@ namespace DiO_CS_GliphRecognizer
         /// <summary>
         /// Collection of glyph databases.
         /// </summary>
-        private GlyphDatabases glyphDatabases;
+        private GlyphDatabases glyphDatabases = new GlyphDatabases();
 
         /// <summary>
         /// Glyph recognizer to use for glyph recognition in video.
@@ -55,7 +62,7 @@ namespace DiO_CS_GliphRecognizer
         /// <summary>
         /// Recognized database.
         /// </summary>
-        private List<ExtractedGlyphData> recognisedGlyphs;
+        private List<ExtractedGlyphData> recognisedGlyphs = new List<ExtractedGlyphData>();
 
         /// <summary>
         /// Video source.
@@ -70,17 +77,33 @@ namespace DiO_CS_GliphRecognizer
         /// <summary>
         /// Sync object.
         /// </summary>
-        private object syncLock;
+        private object syncLock = new object();
 
         /// <summary>
         /// Image point of the object to estimate pose for.
         /// </summary>
-        private AForge.Point[] imagePoints;
+        private AForge.Point[] imagePoints = new AForge.Point[4];
 
         /// <summary>
         /// Colors used to highlight points on image.
         /// </summary>
-        private Color[] pointsColors;
+        private Color[] pointsColors = new Color[4]
+            {
+                Color.Yellow,
+                Color.Blue,
+                Color.Red,
+                Color.Lime
+            };
+
+        /// <summary>
+        /// Video capture devices.
+        /// </summary>
+        private VideoDevice[] videoDevices;
+
+        /// <summary>
+        /// Connector
+        /// </summary>
+        private DataConnector connector;
 
         #endregion
 
@@ -109,22 +132,108 @@ namespace DiO_CS_GliphRecognizer
         {
             InitializeComponent();
 
-            this.glyphDatabases = new GlyphDatabases();
-            this.syncLock = new object();
-            this.recognisedGlyphs = new List<ExtractedGlyphData>();
-            this.imagePoints = new AForge.Point[4];
-            this.pointsColors = new Color[4]
+            // Check to see what video inputs we have available.
+            this.videoDevices = this.GetDevices();
+
+            if (videoDevices.Length == 0)
             {
-                Color.Yellow,
-                Color.Blue,
-                Color.Red,
-                Color.Lime
-            };
+                DialogResult res = MessageBox.Show("A camera device was not detected. Do you want to exit?", "",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (res == System.Windows.Forms.DialogResult.Yes)
+                {
+                    Application.Exit();
+                }
+            }
+
+            // Add cameras to the menus.
+            this.AddCameras(this.videoDevices, this.captureDeviceToolStripMenuItem, this.camerasToolStripMenuItem_Click);
         }
 
         #endregion
 
         #region Private
+
+        /// <summary>
+        /// Get list of all available devices on the PC.
+        /// </summary>
+        /// <returns></returns>
+        private VideoDevice[] GetDevices()
+        {
+            //Set up the capture method 
+            //-> Find systems cameras with DirectShow.Net dll, thanks to Carles Lloret.
+            //DsDevice[] systemCamereas = DsDevice.GetDevicesOfCat(AForge.Video.DirectShow.FilterCategory.VideoInputDevice);
+
+            // Enumerate video devices
+            FilterInfoCollection systemCamereas = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+
+            VideoDevice[] videoDevices = new VideoDevice[systemCamereas.Count];
+
+            for (int index = 0; index < systemCamereas.Count; index++)
+            {
+                videoDevices[index] = new VideoDevice(index, systemCamereas[index].Name, systemCamereas[index].MonikerString);
+            }
+
+            return videoDevices;
+        }
+
+        /// <summary>
+        /// Add video devices to the tool stript menu.
+        /// </summary>
+        /// <param name="videoDevices">List of camears.</param>
+        /// <param name="menu">Menu item.</param>
+        /// <param name="callback">Callback</param>
+        private void AddCameras(VideoDevice[] videoDevices, ToolStripMenuItem menu, EventHandler callback)
+        {
+            if (videoDevices.Length == 0)
+            {
+                return;
+            }
+
+            menu.DropDown.Items.Clear();
+
+            foreach (VideoDevice device in videoDevices)
+            {
+                // Store the each retrieved available capture device into the MenuItems.
+                ToolStripMenuItem mItem = new ToolStripMenuItem();
+
+                mItem.Text = String.Format("{0:D2} / {1}", device.Index, device.Name);
+                mItem.Tag = device;
+                mItem.Enabled = true;
+                mItem.Checked = false;
+                mItem.Click += callback;
+
+                menu.DropDown.Items.Add(mItem);
+            }
+        }
+
+        /// <summary>
+        /// Start video capture.
+        /// </summary>
+        /// <param name="monikerString">Moniker string.</param>
+        private void StartCapture(string monikerString)
+        {
+            this.videoSource = new VideoCaptureDevice(monikerString);
+
+            // We will only use 1 frame ready event this is not really safe but it fits the purpose.
+            this.videoSource.NewFrame += new NewFrameEventHandler(this.videoSource_NewFrame);
+
+            //_Capture2.Start(); //We make sure we start Capture device 2 first.
+            this.videoSource.Start();
+        }
+
+        /// <summary>
+        /// Stop video capture.
+        /// </summary>
+        private void StopCapture()
+        {
+            if (this.videoSource != null)
+            {
+                // We will only use 1 frame ready event this is not really safe but it fits the purpose.
+                this.videoSource.NewFrame -= new NewFrameEventHandler(this.videoSource_NewFrame);
+
+                this.videoSource.Stop();
+            }
+        }
 
         /// <summary>
         /// Create glyph data.
@@ -166,66 +275,22 @@ namespace DiO_CS_GliphRecognizer
         /// </summary>
         private void LoadGlyphDatabases5()
         {
-            const string dbName = "ExampleSize5";
-            const int glyphSize = 5;
-            
-            // Create glyph.
-            string glyphName1 = "Test1";
-            byte[,] glyphData1 = new byte[glyphSize, glyphSize]
+            try
             {
-                {0, 0, 0, 0, 0},
-                {0, 0, 1, 0, 0},
-                {0, 1, 1, 1, 0},
-                {0, 1, 0, 0, 0},
-                {0, 0, 0, 0, 0}
-            };
+                using (XmlTextReader xmlOut = new XmlTextReader(Properties.Settings.Default.LastDatabasePath))
+                {
+                    this.glyphDatabases.Load(xmlOut);
+                }
 
-            Glyph testGlyph1 = new Glyph(glyphName1, glyphData1);
-            testGlyph1.UserData = new GlyphVisualizationData(Color.Purple);
+                this.recognizer = new GlyphRecognizer(glyphDatabases["ExampleSize5"].Size);
 
-            // Create glyph.
-            string glyphName2 = "Test2";
-            byte[,] glyphData2 = new byte[glyphSize, glyphSize]
+                // set the database to image processor ...
+                this.recognizer.GlyphDatabase = this.glyphDatabases["ExampleSize5"];
+            }
+            catch (Exception exception)
             {
-                {0, 0, 0, 0, 0},
-                {0, 1, 0, 1, 0},
-                {0, 0, 1, 0, 0},
-                {0, 1, 0, 0, 0},
-                {0, 0, 0, 0, 0}
-            };
 
-            Glyph testGlyph2 = new Glyph(glyphName2, glyphData2);
-            testGlyph2.UserData = new GlyphVisualizationData(Color.Blue);
-
-            // Create glyph.
-            string glyphName3 = "Test3";
-            byte[,] glyphData3 = new byte[glyphSize, glyphSize]
-            {
-                {0, 0, 0, 0, 0},
-                {0, 1, 0, 1, 0},
-                {0, 0, 1, 0, 0},
-                {0, 0, 1, 1, 0},
-                {0, 0, 0, 0, 0}
-            };
-
-            Glyph testGlyph3 = new Glyph(glyphName3, glyphData3);
-            testGlyph3.UserData = new GlyphVisualizationData(Color.Green);
-
-            // Create database.
-            GlyphDatabase lGlyphDatabase = new GlyphDatabase(glyphSize);
-
-            // Add glyph to database.
-            lGlyphDatabase.Add(testGlyph1);
-            lGlyphDatabase.Add(testGlyph2);
-            lGlyphDatabase.Add(testGlyph3);
-
-            // Add database.
-            this.glyphDatabases.AddGlyphDatabase(dbName, lGlyphDatabase);
-
-            this.recognizer = new GlyphRecognizer(glyphSize);
-
-            // set the database to image processor ...
-            this.recognizer.GlyphDatabase = this.glyphDatabases[dbName]; ;
+            }
         }
 
         /// <summary>
@@ -277,40 +342,66 @@ namespace DiO_CS_GliphRecognizer
         /// <summary>
         /// Display glyph data.
         /// </summary>
-        /// <param name="glyphs"></param>
+        /// <param name="egd"></param>
         /// <param name="name"></param>
-        private void DisplayGlyphData(List<ExtractedGlyphData> glyphs, string name)
+        private void DisplayGlyphData(List<ExtractedGlyphData> egd)
         {
-            foreach (ExtractedGlyphData gdata in glyphs)
+            if (this.dgvGlyphData.InvokeRequired)
             {
-                if (gdata.RecognizedGlyph != null && gdata.RecognizedGlyph.Name == name)
+                this.dgvGlyphData.BeginInvoke(
+                    (MethodInvoker)delegate ()
+                    {
+                        this.dgvGlyphData.Rows.Clear();
+                    });
+            }
+            else
+            {
+                this.dgvGlyphData.Rows.Clear();
+            }
+
+            int index = 0;
+            foreach (ExtractedGlyphData gd in egd)
+            {
+                if (gd.RecognizedGlyph != null)
                 {
                     // Estimate orientation and position.
                     float yaw = 0.0f;
                     float pitch = 0.0f;
                     float roll = 0.0f;
-                    gdata.EstimateOrientation(true, out yaw, out pitch, out roll);
-                    AForge.Point[] pp = gdata.PerformProjection();
-                    float area = gdata.Area();
+                    gd.EstimateOrientation(true, out yaw, out pitch, out roll);
+                    AForge.Point[] pp = gd.PerformProjection();
+                    double area = gd.Area();
 
-                    string textData = string.Format("Name: {0};\r\nAngles[deg]: Y: {1:F3}, P: {2:F3}, R: {3:F3} \r\nPosition[pix]: X: {4:F3} Y: {5:F3}\r\n Size: {5:F3}", gdata.RecognizedGlyph.Name, yaw, pitch, roll, pp[0].X, pp[0].Y, area);
-                    
-                    // Display image.
-                    if (this.lblGlyphData.InvokeRequired)
+                    //string textData = string.Format("Name: {0};\r\nAngles[deg]: Y: {1:F3}, P: {2:F3}, R: {3:F3} \r\nPosition[pix]: X: {4:F3} Y: {5:F3}\r\n Size: {5:F3}",
+                    //    gd.RecognizedGlyph.Name, yaw, pitch, roll, pp[0].X, pp[0].Y, area);
+
+                    string[] row = new string[]
                     {
-                        this.lblGlyphData.BeginInvoke(
-                            (MethodInvoker)delegate()
+                        index.ToString(),
+                        gd.RecognizedGlyph.Name,
+                        pp[0].X.ToString(),
+                        pp[0].Y.ToString(),
+                        yaw.ToString(),
+                        pitch.ToString(),
+                        roll.ToString(),
+                        area.ToString(),
+                    };
+
+                    if (this.dgvGlyphData.InvokeRequired)
+                    {
+                        this.dgvGlyphData.BeginInvoke(
+                            (MethodInvoker)delegate ()
                             {
-                                this.lblGlyphData.Text = textData;
+                                this.dgvGlyphData.Rows.Add(row);
                             });
                     }
                     else
                     {
-                        this.lblGlyphData.Text = textData;
+                        this.dgvGlyphData.Rows.Add(row);
                     }
-
-                    break;
                 }
+
+                index++;
             }
         }
 
@@ -318,8 +409,13 @@ namespace DiO_CS_GliphRecognizer
         /// Display image.
         /// </summary>
         /// <param name="image"></param>
-        private void DisplayGlyphs(Bitmap image, List<ExtractedGlyphData> glyphs)
+        private void DisplayGlyphs(Bitmap image, List<ExtractedGlyphData> egd)
         {
+            if (WindowState == FormWindowState.Minimized) return;
+
+            int centerSize = 20;
+            Point center = new Point(image.Width / 2 - centerSize / 2, image.Height / 2 - centerSize / 2);
+
             // Display image.
             if (this.pbMain.InvokeRequired)
             {
@@ -327,47 +423,104 @@ namespace DiO_CS_GliphRecognizer
                 {
                     using (Graphics g = Graphics.FromImage((Image)image))
                     {
-                        //e.Graphics.Clear(Color.White);
-                        if (this.capturedImage != null)
+                        foreach (ExtractedGlyphData gd in egd)
                         {
-                            foreach (ExtractedGlyphData egd in glyphs)
-                            {
-                                //GlyphDrawer.DrawCentroid(e.Graphics);
-                                GlyphDrawer.DrawContour(egd, g);
-                                GlyphDrawer.DrawPoints(egd, g);
-                                GlyphDrawer.DrawCoordinates(egd, g);
+                            GlyphDrawer.DrawCentroid(gd, g);
+                            GlyphDrawer.DrawContour(gd, g);
+                            GlyphDrawer.DrawPoints(gd, g);
+                            GlyphDrawer.DrawCoordinates(gd, g);
+                        }
 
-                                //Console.WriteLine("{0}", egd.RecognizedGlyph.Name);
-                            }
-                        }            
+                        g.DrawEllipse(Pens.Yellow, new Rectangle(center, new Size(centerSize, centerSize)));
                     }
 
-                    Bitmap rszImage = Utils.ResizeImage(image, this.pbMain.Size);
+                    if (this.pbMain.Size.Width > 1 && this.pbMain.Size.Height > 1)
+                    {
+                        Bitmap rszImage = Utils.ResizeImage(image, this.pbMain.Size);
 
-                    this.pbMain.Image = rszImage;
+                        this.pbMain.Image = rszImage;
+                    }
                 });
             }
             else
             {
                 using (Graphics g = Graphics.FromImage((Image)image))
                 {
-                    //e.Graphics.Clear(Color.White);
-                    if (this.capturedImage != null)
+                    foreach (ExtractedGlyphData gd in egd)
                     {
-                        foreach (ExtractedGlyphData egd in this.recognisedGlyphs)
-                        {
-                            //egd.DrawCentroid(e.Graphics);
-                            GlyphDrawer.DrawContour(egd, g);
-                            GlyphDrawer.DrawPoints(egd, g);
-                            GlyphDrawer.DrawCoordinates(egd, g);
-                            //Console.WriteLine("{0}", egd.RecognizedGlyph.Name);
-                        }
+                        GlyphDrawer.DrawCentroid(gd, g);
+                        GlyphDrawer.DrawContour(gd, g);
+                        GlyphDrawer.DrawPoints(gd, g);
+                        GlyphDrawer.DrawCoordinates(gd, g);
                     }
+
+                    g.DrawEllipse(Pens.Yellow, new Rectangle(center, new Size(centerSize, centerSize)));
                 }
 
-                Bitmap rszImage = Utils.ResizeImage(image, this.pbMain.Size);
+                if (this.pbMain.Size.Width > 1 && this.pbMain.Size.Height > 1)
+                {
+                    Bitmap rszImage = Utils.ResizeImage(image, this.pbMain.Size);
 
-                this.pbMain.Image = rszImage;
+                    this.pbMain.Image = rszImage;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Connect vision system.
+        /// </summary>
+        private void ConnectVisionSystemViaMqtt()
+        {
+            
+            try
+            {
+                this.connector = new DataConnector(new MqttAdapter(
+                    Properties.Settings.Default.BrokerHost,
+                    Properties.Settings.Default.BrokerPort,
+                    Properties.Settings.Default.MqttInputTopic,
+                    Properties.Settings.Default.MqttOutputTopic));
+
+                //this.robot.OnMessage += myRobot_OnMessage;
+                //this.robot.OnSensors += myRobot_OnSensors;
+                //this.robot.OnDistanceSensors += myRobot_OnDistanceSensors;
+                //this.robot.OnGreatingsMessage += myRobot_OnGreatingsMessage;
+                //this.robot.OnStoped += myRobot_OnStoped;
+                //this.robot.OnPosition += myRobot_OnPosition;
+                this.connector.Connect();
+                //this.robot.Reset();
+            }
+            catch (Exception exception)
+            {
+                //this.AddStatus(exception.ToString(), Color.White);
+            }
+            
+        }
+
+        /// <summary>
+        /// Disconnect vision system.
+        /// </summary>
+        private void DisconnectVisionSystemFromMqtt()
+        {
+            try
+            {
+                if (this.connector != null && this.connector.IsConnected)
+                {
+                    this.connector.Disconnect();
+                }
+            }
+            catch (Exception exception)
+            {
+                //this.AddStatus(exception.ToString(), Color.White);
+            }
+        }
+
+        private void SendGlyphData(List<ExtractedGlyphData> egd)
+        {
+            if (this.connector == null) return;
+
+            foreach (ExtractedGlyphData gd in egd)
+            {
+                this.connector.SendGlyph(gd);
             }
         }
 
@@ -379,45 +532,19 @@ namespace DiO_CS_GliphRecognizer
         {
             //this.LoadGlyphDatabases12();
             this.LoadGlyphDatabases5();
-
-            try
-            {
-                // Enumerate video devices
-                FilterInfoCollection videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
-                // Create video source
-                this.videoSource = new VideoCaptureDevice(videoDevices[0].MonikerString);
-                // Set NewFrame event handler
-                this.videoSource.NewFrame += new NewFrameEventHandler(this.video_NewFrame);
-                // Start the video source
-                this.videoSource.Start();
-
-
-            }
-            catch (Exception exception)
-            {
-                MessageBox.Show(exception.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            // Stop and free the web cam object if application is closing.
-            if (this.videoSource != null && this.videoSource.IsRunning)
-            {
-                // Signal to stop when you no longer need capturing.
-                this.videoSource.SignalToStop();
-                // Remove event handler
-                videoSource.NewFrame -= new NewFrameEventHandler(video_NewFrame);
-                // Dispose the camera capture device.
-                this.videoSource = null;
-            }
+            this.StopCapture();
+            this.DisconnectVisionSystemFromMqtt();
         }
 
         #endregion
 
         #region Frame Grabber
 
-        private void video_NewFrame(object sender, NewFrameEventArgs eventArgs)
+        private void videoSource_NewFrame(object sender, NewFrameEventArgs eventArgs)
         {
             lock(this.syncLock)
             {
@@ -426,6 +553,7 @@ namespace DiO_CS_GliphRecognizer
                 {
                     //this.capturedImage.Dispose();
                 }
+
                 // Clone the content.
                 this.capturedImage = (Bitmap)eventArgs.Frame.Clone();
 
@@ -449,22 +577,110 @@ namespace DiO_CS_GliphRecognizer
 
                 // Create temp buffer.
                 List<ExtractedGlyphData> tmpGlyps = recognizer.FindGlyphs(this.capturedImage);
+
+
+
                 // Rewrite the glyph buffer.
                 this.recognisedGlyphs = tmpGlyps;
                 // Display image data.
-                this.DisplayGlyphData(this.recognisedGlyphs, "Test1");
-                // 
-                this.DisplayGlyphs(this.capturedImage, this.recognisedGlyphs);
 
+                this.DisplayGlyphData(this.recognisedGlyphs);
+
+                if (this.capturedImage != null)
+                {
+                    this.DisplayGlyphs(this.capturedImage, this.recognisedGlyphs);
+                }
+
+                this.SendGlyphData(this.recognisedGlyphs);
             }
         }
 
         #endregion
 
-        #region Buttons
+        #region Menu
 
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+
+            sfd.Filter = "XML files (*.XML)|*.XML|All files (*.*)|*.*";
+            sfd.FilterIndex = 1;
+            sfd.RestoreDirectory = true;
+
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                Properties.Settings.Default.LastDatabasePath = sfd.FileName;
+                Properties.Settings.Default.Save();
+
+                using (XmlTextWriter xmlOut = new XmlTextWriter(sfd.FileName, Encoding.UTF8))
+                {
+                    //xmlOut.Settings.Indent = true;
+
+                    this.glyphDatabases.Save(xmlOut);
+                }
+            }
+        }
+
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+
+            ofd.Filter = "XML files (*.XML)|*.XML|All files (*.*)|*.*";
+            ofd.FilterIndex = 1;
+            ofd.RestoreDirectory = true;
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                using (XmlTextReader xmlOut = new XmlTextReader(ofd.FileName))
+                {
+                    this.glyphDatabases.Load(xmlOut);
+                }
+            }
+        }
+
+        private void camerasToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Create instance of caller.
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+
+            // Display text.
+            this.pbMain.Tag = item.Text;
+
+            // Get device.
+            VideoDevice videoDevice = (VideoDevice)item.Tag;
+
+            // Stop if other stream was displaying.
+            this.StopCapture();
+
+            // Start the new stream.
+            this.StartCapture(videoDevice.MonikerString);
+        }
+        
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+        
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (SettingsForm sf = new SettingsForm())
+            {
+                sf.ShowDialog();
+            }
+        }
+
+        private void connectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.ConnectVisionSystemViaMqtt();
+        }
+
+        private void dissconnectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.DisconnectVisionSystemFromMqtt();
+        }
 
         #endregion
-        
+
+
     }
 }
