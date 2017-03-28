@@ -82,5 +82,17 @@ namespace DiO_CS_GliphRecognizer.Properties {
                 this["LastDatabasePath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("pt/img/o/vision/1")]
+        public string MqttImageTopic {
+            get {
+                return ((string)(this["MqttImageTopic"]));
+            }
+            set {
+                this["MqttImageTopic"] = value;
+            }
+        }
     }
 }

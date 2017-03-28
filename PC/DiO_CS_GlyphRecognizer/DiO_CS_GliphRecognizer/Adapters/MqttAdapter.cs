@@ -18,18 +18,38 @@ namespace DiO_CS_GliphRecognizer.Adapters
         /// </summary>
         private MqttClient mqttClient;
 
+        /// <summary>
+        /// URI address.
+        /// </summary>
         private string address;
 
+        /// <summary>
+        /// Port number.
+        /// </summary>
         private int port;
 
+        /// <summary>
+        /// Input topic name.
+        /// </summary>
         private string inputTopic;
 
+        /// <summary>
+        /// Output topic name.
+        /// </summary>
         private string outputTopic;
+
+        /// <summary>
+        /// Output image topic.
+        /// </summary>
+        private string outputImageTopic;
 
         #endregion
 
         #region Properties
 
+        /// <summary>
+        /// Is connected flag.
+        /// </summary>
         public override bool IsConnected
         {
             get
@@ -44,24 +64,39 @@ namespace DiO_CS_GliphRecognizer.Adapters
             }
         }
 
+        /// <summary>
+        /// Maximum timeout.
+        /// </summary>
         public override int MaxTimeout { get; set; }
 
         #endregion
 
         #region Events
 
+        /// <summary>
+        /// On message received event.
+        /// </summary>
         public override event EventHandler<StringEventArgs> OnMessage;
 
         #endregion
 
         #region Constructor
 
-        public MqttAdapter(string address, int port, string inputTopic, string outputTopic)
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="port"></param>
+        /// <param name="inputTopic"></param>
+        /// <param name="outputTopic"></param>
+        /// <param name="outputImageTopic"></param>
+        public MqttAdapter(string address, int port, string inputTopic, string outputTopic, string outputImageTopic)
         {
             this.address = address;
             this.port = port;
             this.inputTopic = inputTopic;
             this.outputTopic = outputTopic;
+            this.outputImageTopic = outputImageTopic;
 
             this.mqttClient = new MqttClient(this.address);
         }
@@ -85,6 +120,9 @@ namespace DiO_CS_GliphRecognizer.Adapters
 
         #region Public Methods
 
+        /// <summary>
+        /// Connect
+        /// </summary>
         public override void Connect()
         {
             try
@@ -111,6 +149,9 @@ namespace DiO_CS_GliphRecognizer.Adapters
             }
         }
 
+        /// <summary>
+        /// Disconnect
+        /// </summary>
         public override void Disconnect()
         {
             if (this.mqttClient == null || !this.mqttClient.IsConnected) return;
@@ -127,11 +168,10 @@ namespace DiO_CS_GliphRecognizer.Adapters
             }
         }
 
-        public override void Dispose()
-        {
-            this.Disconnect();
-        }
-
+        /// <summary>
+        /// Send string request.
+        /// </summary>
+        /// <param name="command"></param>
         public override void SendRequest(string command)
         {
             if (this.mqttClient == null || !this.mqttClient.IsConnected) return;
@@ -140,6 +180,20 @@ namespace DiO_CS_GliphRecognizer.Adapters
             this.mqttClient.Publish(this.outputTopic, byteArray);
         }
 
+        /// <summary>
+        /// Send image bytes.
+        /// </summary>
+        /// <param name="data"></param>
+        public override void SendImageBytes(byte[] data)
+        {
+            if (this.mqttClient == null || !this.mqttClient.IsConnected) return;
+
+            this.mqttClient.Publish(this.outputImageTopic, data);
+        }
+
+        /// <summary>
+        /// Reset
+        /// </summary>
         public override void Reset()
         {
 
@@ -147,6 +201,17 @@ namespace DiO_CS_GliphRecognizer.Adapters
 
         #endregion
 
+        #region IDisposible Implementation
+
+        /// <summary>
+        /// Dispose the object.
+        /// </summary>
+        public override void Dispose()
+        {
+            this.Disconnect();
+        }
+
+        #endregion
     }
 
 }

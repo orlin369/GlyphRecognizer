@@ -207,35 +207,6 @@ namespace DiO_CS_GliphRecognizer
         }
 
         /// <summary>
-        /// Start video capture.
-        /// </summary>
-        /// <param name="monikerString">Moniker string.</param>
-        private void StartCapture(string monikerString)
-        {
-            this.videoSource = new VideoCaptureDevice(monikerString);
-
-            // We will only use 1 frame ready event this is not really safe but it fits the purpose.
-            this.videoSource.NewFrame += new NewFrameEventHandler(this.videoSource_NewFrame);
-
-            //_Capture2.Start(); //We make sure we start Capture device 2 first.
-            this.videoSource.Start();
-        }
-
-        /// <summary>
-        /// Stop video capture.
-        /// </summary>
-        private void StopCapture()
-        {
-            if (this.videoSource != null)
-            {
-                // We will only use 1 frame ready event this is not really safe but it fits the purpose.
-                this.videoSource.NewFrame -= new NewFrameEventHandler(this.videoSource_NewFrame);
-
-                this.videoSource.Stop();
-            }
-        }
-
-        /// <summary>
         /// Create glyph data.
         /// This method is example.
         /// </summary>
@@ -466,6 +437,10 @@ namespace DiO_CS_GliphRecognizer
             }
         }
 
+        #endregion
+
+        #region Data connector
+
         /// <summary>
         /// Connect vision system.
         /// </summary>
@@ -478,7 +453,8 @@ namespace DiO_CS_GliphRecognizer
                     Properties.Settings.Default.BrokerHost,
                     Properties.Settings.Default.BrokerPort,
                     Properties.Settings.Default.MqttInputTopic,
-                    Properties.Settings.Default.MqttOutputTopic));
+                    Properties.Settings.Default.MqttOutputTopic,
+                    Properties.Settings.Default.MqttImageTopic));
 
                 //this.robot.OnMessage += myRobot_OnMessage;
                 //this.robot.OnSensors += myRobot_OnSensors;
@@ -514,14 +490,22 @@ namespace DiO_CS_GliphRecognizer
             }
         }
 
+
         private void SendGlyphData(List<ExtractedGlyphData> egd)
         {
-            if (this.connector == null) return;
+            if (this.connector == null || !this.connector.IsConnected) return;
 
             foreach (ExtractedGlyphData gd in egd)
             {
                 this.connector.SendGlyph(gd);
             }
+        }
+
+        private void SendImageData(Bitmap image)
+        {
+            if (this.connector == null || !this.connector.IsConnected) return;
+            if (image == null) return;
+            this.connector.SendImage(image);
         }
 
         #endregion
@@ -543,6 +527,36 @@ namespace DiO_CS_GliphRecognizer
         #endregion
 
         #region Frame Grabber
+
+        /// <summary>
+        /// Start video capture.
+        /// </summary>
+        /// <param name="monikerString">Moniker string.</param>
+        private void StartCapture(string monikerString)
+        {
+            this.videoSource = new VideoCaptureDevice(monikerString);
+
+            // We will only use 1 frame ready event this is not really safe but it fits the purpose.
+            this.videoSource.NewFrame += new NewFrameEventHandler(this.videoSource_NewFrame);
+
+            //_Capture2.Start(); //We make sure we start Capture device 2 first.
+            this.videoSource.Start();
+        }
+
+        /// <summary>
+        /// Stop video capture.
+        /// </summary>
+        private void StopCapture()
+        {
+            if (this.videoSource != null)
+            {
+                // We will only use 1 frame ready event this is not really safe but it fits the purpose.
+                this.videoSource.NewFrame -= new NewFrameEventHandler(this.videoSource_NewFrame);
+
+                this.videoSource.Stop();
+            }
+        }
+
 
         private void videoSource_NewFrame(object sender, NewFrameEventArgs eventArgs)
         {
@@ -589,6 +603,10 @@ namespace DiO_CS_GliphRecognizer
                 if (this.capturedImage != null)
                 {
                     this.DisplayGlyphs(this.capturedImage, this.recognisedGlyphs);
+
+                    Bitmap dump = (Bitmap)this.capturedImage.Clone();
+                    this.SendImageData(Utils.ResizeImage(dump, new Size(100, 100)));
+                    dump.Dispose();
                 }
 
                 this.SendGlyphData(this.recognisedGlyphs);

@@ -17,5 +17,8 @@
     <Setting Name="LastDatabasePath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="MqttImageTopic" Type="System.String" Scope="User">
+      <Value Profile="(Default)">pt/img/o/vision/1</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

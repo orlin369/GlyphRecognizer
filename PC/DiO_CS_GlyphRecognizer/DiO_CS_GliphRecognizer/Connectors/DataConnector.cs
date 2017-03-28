@@ -4,6 +4,9 @@ using DiO_CS_GliphRecognizer.Data;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,11 +37,27 @@ namespace DiO_CS_GliphRecognizer.Connectors
             adapter.SendRequest(data);
         }
 
+        public void SendData(byte[] data)
+        {
+            adapter.SendImageBytes(data);
+        }
+
         public void SendGlyph(ExtractedGlyphData egd)
         {
             SerialExtractedGlyphData sgd = new SerialExtractedGlyphData(egd);
             string json = JsonConvert.SerializeObject(sgd);
             this.SendData(json);
+        }
+
+        public void SendImage(Bitmap image)
+        {
+            if (this.adapter == null) return;
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                image.Save(ms, ImageFormat.Png);
+                this.adapter.SendImageBytes(ms.ToArray());
+            }
         }
 
         internal void Connect()

@@ -37,6 +37,8 @@ namespace DiO_CS_GliphRecognizer.Adapters
         /// </summary>
         public abstract void Connect();
 
+
+
         /// <summary>
         /// Disconnect
         /// </summary>
@@ -52,6 +54,8 @@ namespace DiO_CS_GliphRecognizer.Adapters
         /// </summary>
         /// <param name="command"></param>
         public abstract void SendRequest(string command);
+
+        public abstract void SendImageBytes(byte[] data);
 
         public abstract void Dispose();
 

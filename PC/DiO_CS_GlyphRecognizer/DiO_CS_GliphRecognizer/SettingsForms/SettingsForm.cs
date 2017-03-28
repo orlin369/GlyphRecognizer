@@ -46,6 +46,7 @@ namespace DiO_CS_GliphRecognizer.SettingsForms
             this.tbBrokerPort.Text = Properties.Settings.Default.BrokerPort.ToString();
             this.tbInputTopic.Text = Properties.Settings.Default.MqttInputTopic;
             this.tbOutputTopic.Text = Properties.Settings.Default.MqttOutputTopic;
+            this.tbImageTopic.Text = Properties.Settings.Default.MqttImageTopic;
         }
 
         private void SaveFields()
@@ -86,6 +87,10 @@ namespace DiO_CS_GliphRecognizer.SettingsForms
                     Properties.Settings.Default.MqttOutputTopic = this.tbOutputTopic.Text;
                 }
 
+                if (!string.IsNullOrEmpty(this.tbImageTopic.Text))
+                {
+                    Properties.Settings.Default.MqttImageTopic = this.tbImageTopic.Text;
+                }
 
                 // Save settings.
                 Properties.Settings.Default.Save();
