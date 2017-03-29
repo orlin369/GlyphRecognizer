@@ -607,7 +607,7 @@ namespace DiO_CS_GliphRecognizer
                     this.DisplayGlyphs(this.capturedImage, this.recognisedGlyphs);
 
                     Bitmap dump = (Bitmap)this.capturedImage.Clone();
-                    this.SendImageData(Utils.ResizeImage(dump, new Size(100, 100)));
+                    this.SendImageData(Utils.ResizeImage(dump, Properties.Settings.Default.ImageSize));
                     dump.Dispose();
                 }
 

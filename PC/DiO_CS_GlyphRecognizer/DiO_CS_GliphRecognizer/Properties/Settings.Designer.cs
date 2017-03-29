@@ -94,5 +94,17 @@ namespace DiO_CS_GliphRecognizer.Properties {
                 this["MqttImageTopic"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100, 100")]
+        public global::System.Drawing.Size ImageSize {
+            get {
+                return ((global::System.Drawing.Size)(this["ImageSize"]));
+            }
+            set {
+                this["ImageSize"] = value;
+            }
+        }
     }
 }

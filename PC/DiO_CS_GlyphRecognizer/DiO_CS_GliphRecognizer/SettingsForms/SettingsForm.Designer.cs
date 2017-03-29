@@ -30,8 +30,12 @@
         {
             this.tcSettings = new System.Windows.Forms.TabControl();
             this.tpGlyphDatabase = new System.Windows.Forms.TabPage();
+            this.bDefaultDatabasePath = new System.Windows.Forms.TextBox();
+            this.btnOpenDefaultDatabase = new System.Windows.Forms.Button();
             this.tpMQTT = new System.Windows.Forms.TabPage();
             this.gbMQTT = new System.Windows.Forms.GroupBox();
+            this.tbImageTopic = new System.Windows.Forms.TextBox();
+            this.lblImageTopic = new System.Windows.Forms.Label();
             this.tbBrokerPort = new System.Windows.Forms.TextBox();
             this.lblBrokerPort = new System.Windows.Forms.Label();
             this.tbBrokerDomain = new System.Windows.Forms.TextBox();
@@ -40,10 +44,9 @@
             this.tbOutputTopic = new System.Windows.Forms.TextBox();
             this.lblOutputTopic = new System.Windows.Forms.Label();
             this.lblInputTopic = new System.Windows.Forms.Label();
-            this.tbImageTopic = new System.Windows.Forms.TextBox();
-            this.lblImageTopic = new System.Windows.Forms.Label();
-            this.btnOpenDefaultDatabase = new System.Windows.Forms.Button();
-            this.bDefaultDatabasePath = new System.Windows.Forms.TextBox();
+            this.tbImageWidth = new System.Windows.Forms.TextBox();
+            this.tbImageHeight = new System.Windows.Forms.TextBox();
+            this.lblImageSize = new System.Windows.Forms.Label();
             this.tcSettings.SuspendLayout();
             this.tpGlyphDatabase.SuspendLayout();
             this.tpMQTT.SuspendLayout();
@@ -73,6 +76,22 @@
             this.tpGlyphDatabase.TabIndex = 0;
             this.tpGlyphDatabase.Text = "Glyph Database";
             // 
+            // bDefaultDatabasePath
+            // 
+            this.bDefaultDatabasePath.Location = new System.Drawing.Point(8, 16);
+            this.bDefaultDatabasePath.Name = "bDefaultDatabasePath";
+            this.bDefaultDatabasePath.Size = new System.Drawing.Size(303, 22);
+            this.bDefaultDatabasePath.TabIndex = 9;
+            // 
+            // btnOpenDefaultDatabase
+            // 
+            this.btnOpenDefaultDatabase.Location = new System.Drawing.Point(317, 6);
+            this.btnOpenDefaultDatabase.Name = "btnOpenDefaultDatabase";
+            this.btnOpenDefaultDatabase.Size = new System.Drawing.Size(113, 40);
+            this.btnOpenDefaultDatabase.TabIndex = 0;
+            this.btnOpenDefaultDatabase.Text = "Open";
+            this.btnOpenDefaultDatabase.UseVisualStyleBackColor = true;
+            // 
             // tpMQTT
             // 
             this.tpMQTT.BackColor = System.Drawing.SystemColors.Control;
@@ -86,6 +105,9 @@
             // 
             // gbMQTT
             // 
+            this.gbMQTT.Controls.Add(this.lblImageSize);
+            this.gbMQTT.Controls.Add(this.tbImageHeight);
+            this.gbMQTT.Controls.Add(this.tbImageWidth);
             this.gbMQTT.Controls.Add(this.tbImageTopic);
             this.gbMQTT.Controls.Add(this.lblImageTopic);
             this.gbMQTT.Controls.Add(this.tbBrokerPort);
@@ -102,6 +124,22 @@
             this.gbMQTT.TabIndex = 1;
             this.gbMQTT.TabStop = false;
             this.gbMQTT.Text = "MQTT";
+            // 
+            // tbImageTopic
+            // 
+            this.tbImageTopic.Location = new System.Drawing.Point(127, 176);
+            this.tbImageTopic.Name = "tbImageTopic";
+            this.tbImageTopic.Size = new System.Drawing.Size(303, 22);
+            this.tbImageTopic.TabIndex = 12;
+            // 
+            // lblImageTopic
+            // 
+            this.lblImageTopic.AutoSize = true;
+            this.lblImageTopic.Location = new System.Drawing.Point(27, 176);
+            this.lblImageTopic.Name = "lblImageTopic";
+            this.lblImageTopic.Size = new System.Drawing.Size(89, 17);
+            this.lblImageTopic.TabIndex = 11;
+            this.lblImageTopic.Text = "Image Topic:";
             // 
             // tbBrokerPort
             // 
@@ -144,7 +182,7 @@
             // 
             // tbOutputTopic
             // 
-            this.tbOutputTopic.Location = new System.Drawing.Point(127, 115);
+            this.tbOutputTopic.Location = new System.Drawing.Point(127, 132);
             this.tbOutputTopic.Name = "tbOutputTopic";
             this.tbOutputTopic.Size = new System.Drawing.Size(303, 22);
             this.tbOutputTopic.TabIndex = 2;
@@ -152,7 +190,7 @@
             // lblOutputTopic
             // 
             this.lblOutputTopic.AutoSize = true;
-            this.lblOutputTopic.Location = new System.Drawing.Point(27, 115);
+            this.lblOutputTopic.Location = new System.Drawing.Point(27, 132);
             this.lblOutputTopic.Name = "lblOutputTopic";
             this.lblOutputTopic.Size = new System.Drawing.Size(94, 17);
             this.lblOutputTopic.TabIndex = 1;
@@ -167,37 +205,28 @@
             this.lblInputTopic.TabIndex = 0;
             this.lblInputTopic.Text = "Input Topic:";
             // 
-            // tbImageTopic
+            // tbImageWidth
             // 
-            this.tbImageTopic.Location = new System.Drawing.Point(127, 143);
-            this.tbImageTopic.Name = "tbImageTopic";
-            this.tbImageTopic.Size = new System.Drawing.Size(303, 22);
-            this.tbImageTopic.TabIndex = 12;
+            this.tbImageWidth.Location = new System.Drawing.Point(127, 204);
+            this.tbImageWidth.Name = "tbImageWidth";
+            this.tbImageWidth.Size = new System.Drawing.Size(86, 22);
+            this.tbImageWidth.TabIndex = 13;
             // 
-            // lblImageTopic
+            // tbImageHeight
             // 
-            this.lblImageTopic.AutoSize = true;
-            this.lblImageTopic.Location = new System.Drawing.Point(27, 143);
-            this.lblImageTopic.Name = "lblImageTopic";
-            this.lblImageTopic.Size = new System.Drawing.Size(89, 17);
-            this.lblImageTopic.TabIndex = 11;
-            this.lblImageTopic.Text = "Image Topic:";
+            this.tbImageHeight.Location = new System.Drawing.Point(219, 204);
+            this.tbImageHeight.Name = "tbImageHeight";
+            this.tbImageHeight.Size = new System.Drawing.Size(86, 22);
+            this.tbImageHeight.TabIndex = 14;
             // 
-            // btnOpenDefaultDatabase
+            // lblImageSize
             // 
-            this.btnOpenDefaultDatabase.Location = new System.Drawing.Point(317, 6);
-            this.btnOpenDefaultDatabase.Name = "btnOpenDefaultDatabase";
-            this.btnOpenDefaultDatabase.Size = new System.Drawing.Size(113, 40);
-            this.btnOpenDefaultDatabase.TabIndex = 0;
-            this.btnOpenDefaultDatabase.Text = "Open";
-            this.btnOpenDefaultDatabase.UseVisualStyleBackColor = true;
-            // 
-            // bDefaultDatabasePath
-            // 
-            this.bDefaultDatabasePath.Location = new System.Drawing.Point(8, 16);
-            this.bDefaultDatabasePath.Name = "bDefaultDatabasePath";
-            this.bDefaultDatabasePath.Size = new System.Drawing.Size(303, 22);
-            this.bDefaultDatabasePath.TabIndex = 9;
+            this.lblImageSize.AutoSize = true;
+            this.lblImageSize.Location = new System.Drawing.Point(27, 207);
+            this.lblImageSize.Name = "lblImageSize";
+            this.lblImageSize.Size = new System.Drawing.Size(81, 17);
+            this.lblImageSize.TabIndex = 15;
+            this.lblImageSize.Text = "Image Size:";
             // 
             // SettingsForm
             // 
@@ -237,5 +266,8 @@
         private System.Windows.Forms.Button btnOpenDefaultDatabase;
         private System.Windows.Forms.TextBox tbImageTopic;
         private System.Windows.Forms.Label lblImageTopic;
+        private System.Windows.Forms.Label lblImageSize;
+        private System.Windows.Forms.TextBox tbImageHeight;
+        private System.Windows.Forms.TextBox tbImageWidth;
     }
 }

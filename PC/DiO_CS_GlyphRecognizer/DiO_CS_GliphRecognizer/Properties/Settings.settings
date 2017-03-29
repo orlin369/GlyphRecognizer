@@ -20,5 +20,8 @@
     <Setting Name="MqttImageTopic" Type="System.String" Scope="User">
       <Value Profile="(Default)">pt/img/o/vision/1</Value>
     </Setting>
+    <Setting Name="ImageSize" Type="System.Drawing.Size" Scope="User">
+      <Value Profile="(Default)">100, 100</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
