@@ -497,7 +497,9 @@ namespace DiO_CS_GliphRecognizer
 
             foreach (ExtractedGlyphData gd in egd)
             {
-                this.connector.SendGlyph(gd);
+                SerialExtractedGlyphData sgd = new SerialExtractedGlyphData(gd);
+
+                this.connector.SendGlyph(sgd);
             }
         }
 
